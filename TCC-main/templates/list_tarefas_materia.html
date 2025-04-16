@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Tarefas da Matéria: {{ materia.nome_materia }}</h2>
+
+<div class="row">
+  {% for tarefa in tarefas %}
+  <div class="col-md-4 mb-4">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{ tarefa.titulo }}</h5>
+        <p class="card-text">
+          <strong>Descrição:</strong> {{ tarefa.descricao }}<br>
+          <strong>Data de Entrega:</strong> {{ tarefa.data_entrega.strftime('%d/%m/%Y') }}<br>
+          <strong>Status:</strong> {% if tarefa.concluida %} ✅ Concluída {% else %} ⏳ Pendente {% endif %}
+        </p>
+        <a href="{{ url_for('edit_tarefa', id_tarefa=tarefa.id_tarefa) }}" class="btn btn-warning">Editar</a>
+        <a href="{{ url_for('delete_tarefa', id_tarefa=tarefa.id_tarefa) }}" class="btn btn-danger">Excluir</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="text-center mt-4">
+  <a href="{{ url_for('add_tarefa', id_materia=materia.id_materia) }}" class="btn btn-success">Adicionar Tarefa</a>
+</div>
+
+{% endblock %}

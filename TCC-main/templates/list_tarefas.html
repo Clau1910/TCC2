@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Lista de Tarefas</h2>
+<ul class="list-group">
+    {% for tarefa in tarefas %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+                <strong>{{ tarefa.titulo }}</strong> - {{ tarefa.descricao }} <br>
+                <small>Data de Entrega: {{ tarefa.data_entrega.strftime('%d/%m/%Y') }}</small>
+            </div>
+            <div>
+                {% if tarefa.concluida %}
+                    <span class="badge badge-success">Concluída</span>
+                {% else %}
+                    <span class="badge badge-warning">Pendente</span>
+                {% endif %}
+                <a href="{{ url_for('edit_tarefa', id_tarefa=tarefa.id_tarefa) }}" class="btn btn-sm btn-primary">Editar</a>
+                <a href="{{ url_for('delete_tarefa', id_tarefa=tarefa.id_tarefa) }}" class="btn btn-sm btn-danger">Excluir</a>
+            </div>
+        </li>
+    {% endfor %}
+</ul>
+
+<div class="text-center mt-4">
+    <a href="{{ url_for('add_tarefa') }}" class="btn btn-success">Adicionar Nova Tarefa</a>
+</div>
+{% endblock %}

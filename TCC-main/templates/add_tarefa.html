@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Adicionar Tarefa</h2>
+<form action="{{ url_for('add_tarefa') }}" method="post">
+    <div class="form-group">
+        <label for="titulo">Título:</label>
+        <input type="text" class="form-control" name="titulo" required>
+    </div>
+    <div class="form-group">
+        <label for="descricao">Descrição:</label>
+        <textarea class="form-control" name="descricao" required></textarea>
+    </div>
+    <div class="form-group">
+        <label for="data_entrega">Data de Entrega:</label>
+        <input type="date" class="form-control" name="data_entrega" required>
+    </div>
+    <div class="form-group">
+        <label for="materia_id">Matéria:</label>
+        <select class="form-control" name="materia_id" required>
+            {% for materia in materias %}
+                <option value="{{ materia.id }}">{{ materia.nome_materia }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Adicionar Tarefa</button>
+</form>
+{% endblock %}

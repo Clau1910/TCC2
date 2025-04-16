@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Lista de Matérias</h2>
+<div class="text-center mb-4">
+    <a href="{{ url_for('add_materia') }}" class="btn btn-success">Adicionar Matéria</a>
+</div>
+<table class="table table-bordered text-center">
+    <thead class="thead-dark">
+        <tr>
+            <th>ID</th>
+            <th>Nome</th>
+            <th>Descrição</th>
+            <th>Carga Horária</th>
+            <th>Professor</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for materia in materias %}
+        <tr>
+            <td>{{ materia.id_materia }}</td>
+            <td>{{ materia.nome_materia }}</td>
+            <td>{{ materia.descricao }}</td>
+            <td>{{ materia.carga_horaria }}h</td>
+            <td>{{ materia.professor }}</td>
+            <td>
+                <a href="{{ url_for('edit_materia', id_materia=materia.id_materia) }}" class="btn btn-primary">Editar</a>
+                <a href="{{ url_for('delete_materia', id_materia=materia.id_materia) }}" class="btn btn-danger">Excluir</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

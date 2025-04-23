@@ -1,14 +1,23 @@
 import os
 import mysql.connector
-from flask import Flask, request, redirect, url_for, render_template, jsonify
+from flask import Flask, request, redirect, url_for, render_template, jsonify, session, flash
 
 # Configuração do Flask
 app = Flask(__name__)
+app.secret_key = 'supersecretkey'  # Para sessões e flash messages
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
 # Certificar que a pasta de uploads existe
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/base')
+def base():
+    return render_template('base.html')
 
 # Configuração do Banco de Dados
 DB_CONFIG = {
@@ -31,17 +40,60 @@ def get_db_connection():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
+def login_required(f):
+    from functools import wraps
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'usuario_id' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email', '').strip()
+        senha = request.form.get('senha', '').strip()
+
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM usuarios WHERE email = %s AND senha = %s", (email, senha))
+            usuario = cursor.fetchone()
+            cursor.close()
+            conn.close()
+
+            if usuario:
+                session['usuario_id'] = usuario['id']
+                session['usuario_nome'] = usuario['nome']
+                return redirect(url_for('index'))
+            else:
+                flash('Email ou senha inválidos.')
+                return redirect(url_for('login'))
+        else:
+            flash('Erro ao conectar ao banco de dados.')
+            return redirect(url_for('login'))
+
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
+
 @app.route('/add_materia', methods=['POST', 'GET'])
+@login_required
 def add_materia():
     if request.method == 'POST':
         nome_materia = request.form.get('nome_materia', '').strip()
         professor = request.form.get('professor', '').strip()
         horario = request.form.get('horario', '').strip()
         foto = request.files.get('foto')
-        usuario_id = 1  # Simulando um usuário fixo (isso será substituído quando houver login)
+        usuario_id = session.get('usuario_id')
 
         if not nome_materia:
-            return "Erro: Nome da matéria é obrigatório.", 400
+            flash("Erro: Nome da matéria é obrigatório.")
+            return redirect(request.url)
 
         filename = "default.jpg"
         if foto and allowed_file(foto.filename):
@@ -55,26 +107,30 @@ def add_materia():
             cursor.execute("INSERT INTO materias (usuario_id, nome, professor, horario, foto) VALUES (%s, %s, %s, %s, %s)",
                            (usuario_id, nome_materia, professor, horario, filename))
             conn.commit()
-            cursor.close()  # Fecha o cursor
-            conn.close()  # Fecha a conexão
+            cursor.close()
+            conn.close()
             return redirect(url_for('list_materias'))
         else:
-            return "Erro ao conectar ao banco de dados.", 500
+            flash("Erro ao conectar ao banco de dados.")
+            return redirect(request.url)
 
     return render_template('add_materia.html')
 
 @app.route('/list_materias')
+@login_required
 def list_materias():
+    usuario_id = session.get('usuario_id')
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM materias")
+        cursor.execute("SELECT * FROM materias WHERE usuario_id = %s", (usuario_id,))
         materias = cursor.fetchall()
-        cursor.close()  # Fecha o cursor
-        conn.close()  # Fecha a conexão
+        cursor.close()
+        conn.close()
         return render_template('list_materias.html', materias=materias)
     else:
-        return "Erro ao conectar ao banco de dados.", 500
+        flash("Erro ao conectar ao banco de dados.")
+        return redirect(url_for('index'))
 
 @app.route('/test_db_connection')
 def test_db_connection():
@@ -82,8 +138,25 @@ def test_db_connection():
     if conn:
         conn.close()
         return jsonify({'status': 'success', 'message': 'Conexão com o banco de dados bem-sucedida!'})
+
     else:
         return jsonify({'status': 'error', 'message': 'Falha na conexão com o banco de dados.'}), 500
+
+@app.route('/list_tarefas')
+@login_required
+def list_tarefas():
+    usuario_id = session.get('usuario_id')
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM tarefas WHERE usuario_id = %s", (usuario_id,))
+        tarefas = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('list_tarefas.html', tarefas=tarefas)
+    else:
+        flash("Erro ao conectar ao banco de dados.")
+        return redirect(url_for('index'))
 
 @app.route('/add_tarefa', methods=['POST', 'GET'])
 def add_tarefa():

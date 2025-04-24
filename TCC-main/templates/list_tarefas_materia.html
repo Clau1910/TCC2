@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Tarefas da Matéria: {{ materia.nome_materia }}</h2>
+<h2>Tarefas da Matéria: {{ materia.nome }}</h2>
 
 <div class="row">
   {% for tarefa in tarefas %}
@@ -23,7 +23,7 @@
 </div>
 
 <div class="text-center mt-4">
-  <a href="{{ url_for('add_tarefa', id_materia=materia.id_materia) }}" class="btn btn-success">Adicionar Tarefa</a>
+  <a href="{{ url_for('add_tarefa', id_materia=materia['id']) }}" class="btn btn-success">Adicionar Tarefa</a>
 </div>
 
 {% endblock %}

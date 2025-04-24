@@ -6,19 +6,15 @@
     <form method="post" enctype="multipart/form-data">
       <div class="form-group">
         <label for="nome_materia">Nome da Matéria</label>
-        <input type="text" class="form-control" id="nome_materia" name="nome_materia" value="{{ materia.nome_materia }}" required>
-      </div>
-      <div class="form-group">
-        <label for="descricao">Descrição</label>
-        <textarea class="form-control" id="descricao" name="descricao" rows="4" required>{{ materia.descricao }}</textarea>
-      </div>
-      <div class="form-group">
-        <label for="carga_horaria">Carga Horária (horas)</label>
-        <input type="number" class="form-control" id="carga_horaria" name="carga_horaria" value="{{ materia.carga_horaria }}" min="1" required>
+        <input type="text" class="form-control" id="nome_materia" name="nome_materia" value="{{ materia.nome }}" required>
       </div>
       <div class="form-group">
         <label for="professor">Professor Responsável</label>
         <input type="text" class="form-control" id="professor" name="professor" value="{{ materia.professor }}" required>
+      </div>
+      <div class="form-group">
+        <label for="horario">Horário</label>
+        <input type="text" class="form-control" id="horario" name="horario" value="{{ materia.horario }}" required>
       </div>
       <button type="submit" class="btn btn-success">Salvar Alterações</button>
       <a href="{{ url_for('list_materias') }}" class="btn btn-secondary">Cancelar</a>

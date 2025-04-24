@@ -116,6 +116,10 @@ def add_materia():
 
     return render_template('add_materia.html')
 
+class MateriaObj:
+    def __init__(self, d):
+        self.__dict__ = d
+
 @app.route('/list_materias')
 @login_required
 def list_materias():
@@ -124,9 +128,12 @@ def list_materias():
     if conn:
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM materias WHERE usuario_id = %s", (usuario_id,))
-        materias = cursor.fetchall()
+        materias_dicts = cursor.fetchall()
         cursor.close()
         conn.close()
+        if materias_dicts:
+            print("DEBUG keys in materias_dicts[0]:", list(materias_dicts[0].keys()))
+        materias = [MateriaObj(d) for d in materias_dicts]
         return render_template('list_materias.html', materias=materias)
     else:
         flash("Erro ao conectar ao banco de dados.")
@@ -230,30 +237,29 @@ def delete_tarefa(id_tarefa):
     else:
         return jsonify({'status': 'error', 'message': 'Erro ao conectar ao banco de dados.'}), 500
 
-@app.route('/edit_materia/<int:id_materia>', methods=['POST', 'GET'])
-def edit_materia(id_materia):
+@app.route('/edit_materia/<int:id>', methods=['POST', 'GET'])
+def edit_materia(id):
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM materias WHERE id_materia = %s", (id_materia,))
+        cursor.execute("SELECT * FROM materias WHERE id = %s", (id,))
         materia = cursor.fetchone()
         cursor.close()
         conn.close()
 
         if request.method == 'POST':
             nome_materia = request.form.get('nome_materia', '').strip()
-            descricao = request.form.get('descricao', '').strip()
-            carga_horaria = request.form.get('carga_horaria', '').strip()
             professor = request.form.get('professor', '').strip()
+            horario = request.form.get('horario', '').strip()
 
-            if not nome_materia or not descricao or not carga_horaria or not professor:
+            if not nome_materia or not professor or not horario:
                 return "Erro: Todos os campos são obrigatórios.", 400
 
             conn = get_db_connection()
             if conn:
                 cursor = conn.cursor()
-                cursor.execute("UPDATE materias SET nome = %s, descricao = %s, carga_horaria = %s, professor = %s WHERE id_materia = %s",
-                               (nome_materia, descricao, carga_horaria, professor, id_materia))
+                cursor.execute("UPDATE materias SET nome = %s, professor = %s, horario = %s WHERE id = %s",
+                               (nome_materia, professor, horario, id))
                 conn.commit()
                 cursor.close()
                 conn.close()
@@ -265,17 +271,18 @@ def edit_materia(id_materia):
     else:
         return "Erro ao conectar ao banco de dados.", 500
 
-@app.route('/delete_materia/<int:id_materia>', methods=['DELETE'])
-def delete_materia(id_materia):
+@app.route('/delete_materia/<int:id>', methods=['POST', 'GET'])
+def delete_materia(id):
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM materias WHERE id_materia = %s", (id_materia,))
+        cursor.execute("DELETE FROM materias WHERE id = %s", (id,))
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({'status': 'success', 'message': 'Matéria excluída com sucesso!'})
+        return redirect(url_for('list_materias'))
     else:
-        return jsonify({'status': 'error', 'message': 'Erro ao conectar ao banco de dados.'}), 500
+        flash("Erro ao conectar ao banco de dados.")
+        return redirect(url_for('list_materias'))
 
 app.run(host='0.0.0.0', port= 5001, debug=True)

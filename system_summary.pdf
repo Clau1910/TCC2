@@ -1,0 +1,35 @@
+Sistema de Gestão de Tempo - Resumo do Código Principal e Login
+
+1. main.py - Visão Geral
+- Configuração do Flask e banco de dados MySQL.
+- Função get_db_connection(): conecta ao banco de dados.
+- Função allowed_file(): valida extensões de arquivos para upload.
+- Decorador login_required(): protege rotas que exigem autenticação.
+- Rotas principais:
+  - /login: autentica usuário, cria sessão.
+  - /logout: limpa sessão.
+  - /add_materia: adiciona matéria com dados e foto.
+  - /list_materias: lista matérias do usuário.
+  - /edit_materia: edita dados da matéria.
+  - /delete_materia: exclui matéria.
+  - /add_tarefa, /list_tarefas, /edit_tarefa, /delete_tarefa: gerenciam tarefas.
+
+2. Parte de Login
+- Rota /login (linhas 38-63):
+  - Recebe email e senha via POST.
+  - Conecta ao banco e busca usuário com email e senha.
+  - Se encontrado, salva id e nome na sessão (session['usuario_id'], session['usuario_nome']).
+  - Caso contrário, exibe mensagem de erro.
+- Decorador login_required (linhas 26-34):
+  - Verifica se 'usuario_id' está na sessão.
+  - Se não, redireciona para /login.
+  - Protege rotas que precisam de autenticação.
+
+3. Fluxo Importante
+- Usuário acessa /login e autentica.
+- Após login, pode acessar rotas protegidas como /add_materia.
+- Ao adicionar matéria, dados e foto são salvos no banco.
+- Listagem e edição de matérias usam dados do banco filtrados pelo usuário.
+- Uploads são salvos na pasta static/uploads.
+
+Este resumo cobre as funcionalidades principais e o fluxo de autenticação do sistema.

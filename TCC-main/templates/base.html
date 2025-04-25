@@ -6,6 +6,7 @@
     <title>Gestão de Tempo</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
   </head>
   <body>
     <div class="container">
@@ -34,5 +35,46 @@
       </nav>
       {% block content %}{% endblock %}
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        flatpickr("input[type=date]", {
+          locale: "pt",
+          dateFormat: "d/m/Y"
+        });
+        flatpickr("input[type=time]", {
+          enableTime: true,
+          noCalendar: true,
+          enableSeconds: true,
+          time_24hr: true,
+          dateFormat: "H:i:S"
+        });
+
+        // Real-time clock for São Paulo timezone
+        const DateTime = luxon.DateTime;
+        const clockElement = document.createElement('div');
+        clockElement.style.position = 'fixed';
+        clockElement.style.top = '10px';
+        clockElement.style.right = '10px';
+        clockElement.style.backgroundColor = '#f8f9fa';
+        clockElement.style.border = '1px solid #ddd';
+        clockElement.style.padding = '5px 10px';
+        clockElement.style.borderRadius = '5px';
+        clockElement.style.fontFamily = 'Arial, sans-serif';
+        clockElement.style.fontSize = '14px';
+        clockElement.style.zIndex = '1000';
+        document.body.appendChild(clockElement);
+
+        function updateClock() {
+          const now = DateTime.now().setZone('America/Sao_Paulo');
+          clockElement.textContent = 'Horário São Paulo: ' + now.toFormat('dd/LL/yyyy HH:mm:ss');
+        }
+
+        updateClock();
+        setInterval(updateClock, 1000);
+      });
+    </script>
   </body>
 </html>

@@ -165,22 +165,31 @@ def list_tarefas():
         flash("Erro ao conectar ao banco de dados.")
         return redirect(url_for('index'))
 
+import datetime
+
 @app.route('/add_tarefa', methods=['POST', 'GET'])
+@login_required
 def add_tarefa():
+    usuario_id = session.get('usuario_id')
+    conn = get_db_connection()
     if request.method == 'POST':
-        titulo = request.form.get('titulo', '').strip()
+        nome = request.form.get('titulo', '').strip()
         descricao = request.form.get('descricao', '').strip()
-        data_entrega = request.form.get('data_entrega', '').strip()
+        prazo_str = request.form.get('data_entrega', '').strip()
         materia_id = request.form.get('materia_id', '').strip()
 
-        if not titulo or not descricao or not data_entrega or not materia_id:
+        if not nome or not descricao or not prazo_str or not materia_id:
             return "Erro: Todos os campos são obrigatórios.", 400
 
-        conn = get_db_connection()
+        try:
+            prazo = datetime.datetime.strptime(prazo_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            return "Erro: Formato de data inválido.", 400
+
         if conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO tarefas (titulo, descricao, data_entrega, materia_id) VALUES (%s, %s, %s, %s)",
-                           (titulo, descricao, data_entrega, materia_id))
+            cursor.execute("INSERT INTO tarefas (nome, descricao, prazo, materia_id) VALUES (%s, %s, %s, %s)",
+                           (nome, descricao, prazo, materia_id))
             conn.commit()
             cursor.close()
             conn.close()
@@ -188,7 +197,15 @@ def add_tarefa():
         else:
             return "Erro ao conectar ao banco de dados.", 500
 
-    return render_template('add_tarefa.html')
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM materias WHERE usuario_id = %s", (usuario_id,))
+        materias = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('add_tarefa.html', materias=materias)
+    else:
+        return "Erro ao conectar ao banco de dados.", 500
 
 @app.route('/edit_tarefa/<int:id_tarefa>', methods=['POST', 'GET'])
 def edit_tarefa(id_tarefa):

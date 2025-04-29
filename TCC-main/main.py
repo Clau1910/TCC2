@@ -116,9 +116,18 @@ def add_materia():
 
     return render_template('add_materia.html')
 
+
 class MateriaObj:
     def __init__(self, d):
         self.__dict__ = d
+
+class TarefaObj:
+    def __init__(self, d):
+        self.__dict__ = d
+        # Map DB fields to template expected attributes
+        self.titulo = d.get('nome')
+        self.data_entrega = d.get('prazo')
+        self.id_tarefa = d.get('id')
 
 @app.route('/list_materias')
 @login_required
@@ -152,14 +161,26 @@ def test_db_connection():
 @app.route('/list_tarefas')
 @login_required
 def list_tarefas():
+    import datetime
     usuario_id = session.get('usuario_id')
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM tarefas WHERE usuario_id = %s", (usuario_id,))
-        tarefas = cursor.fetchall()
+        tarefas_dicts = cursor.fetchall()
         cursor.close()
         conn.close()
+        tarefas = []
+        for d in tarefas_dicts:
+            tarefa = TarefaObj(d)
+            # Convert data_entrega to datetime object for template formatting
+            if tarefa.data_entrega and isinstance(tarefa.data_entrega, str):
+                try:
+                    tarefa.data_entrega = datetime.datetime.strptime(tarefa.data_entrega, '%Y-%m-%d')
+                except ValueError:
+                    tarefa.data_entrega = None
+            if tarefa.id_tarefa is not None:
+                tarefas.append(tarefa)
         return render_template('list_tarefas.html', tarefas=tarefas)
     else:
         flash("Erro ao conectar ao banco de dados.")
@@ -182,14 +203,15 @@ def add_tarefa():
             return "Erro: Todos os campos são obrigatórios.", 400
 
         try:
-            prazo = datetime.datetime.strptime(prazo_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+            prazo = datetime.datetime.strptime(prazo_str, '%Y-%m-%d').strftime('%Y-%m-%d')
         except ValueError:
-            return "Erro: Formato de data inválido.", 400
+            flash("Erro: Formato de data inválido. Use o seletor de data para escolher a data corretamente.")
+            return redirect(url_for('add_tarefa'))
 
         if conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO tarefas (nome, descricao, prazo, materia_id) VALUES (%s, %s, %s, %s)",
-                           (nome, descricao, prazo, materia_id))
+            cursor.execute("INSERT INTO tarefas (nome, descricao, prazo, materia_id, usuario_id) VALUES (%s, %s, %s, %s, %s)",
+                           (nome, descricao, prazo, materia_id, usuario_id))
             conn.commit()
             cursor.close()
             conn.close()

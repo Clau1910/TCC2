@@ -199,24 +199,36 @@ def add_tarefa():
         prazo_str = request.form.get('data_entrega', '').strip()
         materia_id = request.form.get('materia_id', '').strip()
 
+        print(f"DEBUG: Dados recebidos - titulo: {nome}, descricao: {descricao}, data_entrega: {prazo_str}, materia_id: {materia_id}, usuario_id: {usuario_id}")
+
         if not nome or not descricao or not prazo_str or not materia_id:
+            print("DEBUG: Falha na validação dos campos obrigatórios")
             return "Erro: Todos os campos são obrigatórios.", 400
 
         try:
             prazo = datetime.datetime.strptime(prazo_str, '%Y-%m-%d').strftime('%Y-%m-%d')
         except ValueError:
             flash("Erro: Formato de data inválido. Use o seletor de data para escolher a data corretamente.")
+            print("DEBUG: Formato de data inválido")
             return redirect(url_for('add_tarefa'))
 
         if conn:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO tarefas (nome, descricao, prazo, materia_id, usuario_id) VALUES (%s, %s, %s, %s, %s)",
-                           (nome, descricao, prazo, materia_id, usuario_id))
-            conn.commit()
-            cursor.close()
-            conn.close()
+            try:
+                cursor.execute("INSERT INTO tarefas (nome, descricao, prazo, materia_id, usuario_id) VALUES (%s, %s, %s, %s, %s)",
+                               (nome, descricao, prazo, materia_id, usuario_id))
+                conn.commit()
+                print("DEBUG: Inserção realizada com sucesso")
+            except Exception as e:
+                print(f"DEBUG: Erro na inserção: {e}")
+                conn.rollback()
+                return f"Erro ao inserir tarefa: {e}", 500
+            finally:
+                cursor.close()
+                conn.close()
             return redirect(url_for('list_tarefas'))
         else:
+            print("DEBUG: Falha na conexão com o banco de dados")
             return "Erro ao conectar ao banco de dados.", 500
 
     if conn:
@@ -227,6 +239,7 @@ def add_tarefa():
         conn.close()
         return render_template('add_tarefa.html', materias=materias)
     else:
+        print("DEBUG: Falha na conexão com o banco de dados para carregar matérias")
         return "Erro ao conectar ao banco de dados.", 500
 
 @app.route('/edit_tarefa/<int:id_tarefa>', methods=['POST', 'GET'])
@@ -323,5 +336,26 @@ def delete_materia(id):
     else:
         flash("Erro ao conectar ao banco de dados.")
         return redirect(url_for('list_materias'))
+
+@app.route('/debug_tarefas')
+@login_required
+def debug_tarefas():
+    usuario_id = session.get('usuario_id')
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor()
+        cursor.execute("SHOW COLUMNS FROM tarefas")
+        columns = cursor.fetchall()
+        cursor.execute("SELECT * FROM tarefas LIMIT 5")
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify({
+            'columns': columns,
+            'rows': rows,
+            'usuario_id': usuario_id
+        })
+    else:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados.'}), 500
 
 app.run(host='0.0.0.0', port= 5001, debug=True)

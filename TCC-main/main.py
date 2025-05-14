@@ -8,6 +8,27 @@ app.secret_key = 'supersecretkey'  # Para sessões e flash messages
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
+from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
+
+class User(UserMixin):
+    def __init__(self, id):
+        self.id = id
+
+@login_manager.user_loader
+def load_user(user_id):
+    # Aqui você pode buscar o usuário no banco de dados e retornar um objeto User completo
+    # Para simplificação, retornamos um User com o id
+    return User(user_id)
+
+@app.before_request
+def before_request():
+    from flask import g
+    g.user = current_user
+
 # Certificar que a pasta de uploads existe
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
@@ -40,14 +61,7 @@ def get_db_connection():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-def login_required(f):
-    from functools import wraps
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if 'usuario_id' not in session:
-            return redirect(url_for('login'))
-        return f(*args, **kwargs)
-    return decorated_function
+from flask_login import login_required
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -206,7 +220,7 @@ def add_tarefa():
             return "Erro: Todos os campos são obrigatórios.", 400
 
         try:
-            prazo = datetime.datetime.strptime(prazo_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+            prazo = datetime.datetime.strptime(prazo_str, '%d/%m/%Y').strftime('%Y-%m-%d')
         except ValueError:
             flash("Erro: Formato de data inválido. Use o seletor de data para escolher a data corretamente.")
             print("DEBUG: Formato de data inválido")
@@ -242,12 +256,15 @@ def add_tarefa():
         print("DEBUG: Falha na conexão com o banco de dados para carregar matérias")
         return "Erro ao conectar ao banco de dados.", 500
 
+from flask_login import login_required
+
 @app.route('/edit_tarefa/<int:id_tarefa>', methods=['POST', 'GET'])
+@login_required
 def edit_tarefa(id_tarefa):
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM tarefas WHERE id_tarefa = %s", (id_tarefa,))
+        cursor.execute("SELECT * FROM tarefas WHERE id = %s", (id_tarefa,))
         tarefa = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -263,7 +280,7 @@ def edit_tarefa(id_tarefa):
             conn = get_db_connection()
             if conn:
                 cursor = conn.cursor()
-                cursor.execute("UPDATE tarefas SET titulo = %s, descricao = %s, data_entrega = %s WHERE id_tarefa = %s",
+                cursor.execute("UPDATE tarefas SET nome = %s, descricao = %s, prazo = %s WHERE id = %s",
                                (titulo, descricao, data_entrega, id_tarefa))
                 conn.commit()
                 cursor.close()
@@ -276,18 +293,20 @@ def edit_tarefa(id_tarefa):
     else:
         return "Erro ao conectar ao banco de dados.", 500
 
-@app.route('/delete_tarefa/<int:id_tarefa>', methods=['DELETE'])
+@app.route('/delete_tarefa/<int:id_tarefa>', methods=['POST'])
+@login_required
 def delete_tarefa(id_tarefa):
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tarefas WHERE id_tarefa = %s", (id_tarefa,))
+        cursor.execute("DELETE FROM tarefas WHERE id = %s", (id_tarefa,))
         conn.commit()
         cursor.close()
         conn.close()
-        return jsonify({'status': 'success', 'message': 'Tarefa excluída com sucesso!'})
+        return redirect(url_for('list_tarefas'))
     else:
-        return jsonify({'status': 'error', 'message': 'Erro ao conectar ao banco de dados.'}), 500
+        flash("Erro ao conectar ao banco de dados.")
+        return redirect(url_for('list_tarefas'))
 
 @app.route('/edit_materia/<int:id>', methods=['POST', 'GET'])
 def edit_materia(id):

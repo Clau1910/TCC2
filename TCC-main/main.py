@@ -78,6 +78,8 @@ def login():
             conn.close()
 
             if usuario:
+                user = User(usuario['id'])
+                login_user(user)
                 session['usuario_id'] = usuario['id']
                 session['usuario_nome'] = usuario['nome']
                 return redirect(url_for('index'))
@@ -92,6 +94,7 @@ def login():
 
 @app.route('/logout')
 def logout():
+    logout_user()
     session.clear()
     return redirect(url_for('login'))
 

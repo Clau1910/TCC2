@@ -280,11 +280,22 @@ def edit_tarefa(id_tarefa):
             if not titulo or not descricao or not data_entrega:
                 return "Erro: Todos os campos são obrigatórios.", 400
 
+            # Convertendo data_entrega para o formato YYYY-MM-DD
+            import datetime
+            try:
+                data_entrega_obj = datetime.datetime.strptime(data_entrega, '%Y-%m-%d')
+            except ValueError:
+                try:
+                    data_entrega_obj = datetime.datetime.strptime(data_entrega, '%d/%m/%Y')
+                except ValueError:
+                    return "Erro: Formato de data inválido.", 400
+            data_entrega_formatada = data_entrega_obj.strftime('%Y-%m-%d')
+
             conn = get_db_connection()
             if conn:
                 cursor = conn.cursor()
                 cursor.execute("UPDATE tarefas SET nome = %s, descricao = %s, prazo = %s WHERE id = %s",
-                               (titulo, descricao, data_entrega, id_tarefa))
+                               (titulo, descricao, data_entrega_formatada, id_tarefa))
                 conn.commit()
                 cursor.close()
                 conn.close()

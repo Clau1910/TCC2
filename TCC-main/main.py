@@ -9,6 +9,8 @@ app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'gif'}
 
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
+from werkzeug.utils import secure_filename
+import json
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -276,6 +278,7 @@ def edit_tarefa(id_tarefa):
             titulo = request.form.get('titulo', '').strip()
             descricao = request.form.get('descricao', '').strip()
             data_entrega = request.form.get('data_entrega', '').strip()
+            foto = request.files.get('foto')
 
             if not titulo or not descricao or not data_entrega:
                 return "Erro: Todos os campos são obrigatórios.", 400
@@ -297,6 +300,17 @@ def edit_tarefa(id_tarefa):
                 cursor.execute("UPDATE tarefas SET nome = %s, descricao = %s, prazo = %s WHERE id = %s",
                                (titulo, descricao, data_entrega_formatada, id_tarefa))
                 conn.commit()
+
+                # Processar upload da foto se houver
+                if foto and foto.filename != '' and allowed_file(foto.filename):
+                    filename = secure_filename(f"tarefa_{id_tarefa}_{foto.filename}")
+                    foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    foto.save(foto_path)
+                    # Inserir registro na tabela atividades_fotos
+                    cursor.execute("INSERT INTO atividades_fotos (usuario_id, tarefa_id, foto) VALUES (%s, %s, %s)",
+                                   (session.get('usuario_id'), id_tarefa, filename))
+                    conn.commit()
+
                 cursor.close()
                 conn.close()
                 return redirect(url_for('list_tarefas'))
@@ -356,15 +370,30 @@ def edit_materia(id):
     else:
         return "Erro ao conectar ao banco de dados.", 500
 
+import os
+
 @app.route('/delete_materia/<int:id>', methods=['POST', 'GET'])
 def delete_materia(id):
     conn = get_db_connection()
     if conn:
-        cursor = conn.cursor()
+        cursor = conn.cursor(dictionary=True)
+        # Buscar o nome do arquivo da foto antes de deletar
+        cursor.execute("SELECT foto FROM materias WHERE id = %s", (id,))
+        materia = cursor.fetchone()
+        foto_filename = materia['foto'] if materia else None
+
+        # Deletar a matéria do banco
         cursor.execute("DELETE FROM materias WHERE id = %s", (id,))
         conn.commit()
         cursor.close()
         conn.close()
+
+        # Apagar o arquivo da foto se existir e não for o padrão
+        if foto_filename and foto_filename != "default.jpg":
+            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], foto_filename)
+            if os.path.exists(foto_path):
+                os.remove(foto_path)
+
         return redirect(url_for('list_materias'))
     else:
         flash("Erro ao conectar ao banco de dados.")
@@ -390,5 +419,86 @@ def debug_tarefas():
         })
     else:
         return jsonify({'error': 'Erro ao conectar ao banco de dados.'}), 500
+
+# Rota para upload de fotos das tarefas
+@app.route('/upload_foto_tarefa/<int:tarefa_id>', methods=['POST'])
+@login_required
+def upload_foto_tarefa(tarefa_id):
+    if 'foto' not in request.files:
+        return jsonify({'error': 'Nenhum arquivo enviado'}), 400
+    foto = request.files['foto']
+    if foto.filename == '':
+        return jsonify({'error': 'Nenhum arquivo selecionado'}), 400
+    if foto and allowed_file(foto.filename):
+        filename = secure_filename(f"tarefa_{tarefa_id}_{foto.filename}")
+        foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        foto.save(foto_path)
+
+        usuario_id = session.get('usuario_id')
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor()
+            cursor.execute("INSERT INTO atividades_fotos (usuario_id, tarefa_id, foto) VALUES (%s, %s, %s)",
+                           (usuario_id, tarefa_id, filename))
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return jsonify({'message': 'Foto enviada com sucesso', 'filename': filename}), 200
+        else:
+            return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+    else:
+        return jsonify({'error': 'Arquivo não permitido'}), 400
+
+# Rota para listar fotos de uma tarefa
+@app.route('/fotos_tarefa/<int:tarefa_id>', methods=['GET'])
+@login_required
+def fotos_tarefa(tarefa_id):
+    usuario_id = session.get('usuario_id')
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT foto FROM atividades_fotos WHERE tarefa_id = %s AND usuario_id = %s", (tarefa_id, usuario_id))
+        fotos = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify(fotos)
+    else:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+# Rota para fornecer eventos das tarefas para o FullCalendar
+@app.route('/tarefas_events', methods=['GET'])
+@login_required
+def tarefas_events():
+    usuario_id = session.get('usuario_id')
+    materia_id = request.args.get('materia_id', None)
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        if materia_id and materia_id != 'all':
+            cursor.execute("SELECT id, nome, descricao, prazo FROM tarefas WHERE usuario_id = %s AND materia_id = %s", (usuario_id, materia_id))
+        else:
+            cursor.execute("SELECT id, nome, descricao, prazo FROM tarefas WHERE usuario_id = %s", (usuario_id,))
+        tarefas = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify(tarefas)
+    else:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+# Rota para listar matérias para o filtro
+@app.route('/materias_list', methods=['GET'])
+@login_required
+def materias_list():
+    usuario_id = session.get('usuario_id')
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, nome FROM materias WHERE usuario_id = %s", (usuario_id,))
+        materias = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return jsonify(materias)
+    else:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
 
 app.run(host='0.0.0.0', port= 5001, debug=True)

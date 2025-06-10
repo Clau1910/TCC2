@@ -151,20 +151,25 @@ class TarefaObj:
 @app.route('/list_materias')
 @login_required
 def list_materias():
-    usuario_id = session.get('usuario_id')
-    conn = get_db_connection()
-    if conn:
-        cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM materias WHERE usuario_id = %s", (usuario_id,))
-        materias_dicts = cursor.fetchall()
-        cursor.close()
-        conn.close()
-        if materias_dicts:
-            print("DEBUG keys in materias_dicts[0]:", list(materias_dicts[0].keys()))
-        materias = [MateriaObj(d) for d in materias_dicts]
-        return render_template('list_materias.html', materias=materias)
-    else:
-        flash("Erro ao conectar ao banco de dados.")
+    try:
+        usuario_id = session.get('usuario_id')
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM materias WHERE usuario_id = %s", (usuario_id,))
+            materias_dicts = cursor.fetchall()
+            cursor.close()
+            conn.close()
+            if materias_dicts:
+                print("DEBUG keys in materias_dicts[0]:", list(materias_dicts[0].keys()))
+            materias = [MateriaObj(d) for d in materias_dicts]
+            return render_template('list_materias.html', materias=materias)
+        else:
+            flash("Erro ao conectar ao banco de dados.")
+            return redirect(url_for('index'))
+    except Exception as e:
+        app.logger.error(f"Erro na rota list_materias: {e}")
+        flash("Erro interno no servidor.")
         return redirect(url_for('index'))
 
 @app.route('/test_db_connection')
@@ -501,4 +506,21 @@ def materias_list():
     else:
         return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
 
-app.run(host='0.0.0.0', port= 5001, debug=True)
+@app.errorhandler(Exception)
+def handle_exception(e):
+    app.logger.error(f"Unhandled exception: {e}")
+    return "Erro interno no servidor.", 500
+
+@app.route('/test')
+def test():
+    return "Servidor funcionando normalmente."
+
+from flask import send_from_directory
+import os
+
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+app.run(host='0.0.0.0', port=5001, debug=True)

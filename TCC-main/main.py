@@ -45,10 +45,11 @@ def base():
 # Configuração do Banco de Dados
 DB_CONFIG = {
     'host': 'localhost',
-    'user': 'root',  # Altere para seu usuário do MySQL
-    'password': 'password',  # Altere para sua senha do MySQL
+    'user': 'root',
+    'password': 'Claudio@13',
     'database': 'gestao_tempo'
 }
+
 
 # Função para conectar ao banco de dados
 def get_db_connection():

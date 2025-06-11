@@ -46,7 +46,7 @@ def base():
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Claudio@13',
+    'password': 'brigadeiro@2025',
     'database': 'gestao_tempo'
 }
 

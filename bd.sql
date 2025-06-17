@@ -4,7 +4,7 @@ USE gestao_tempo;
 -- Tabela de Usuários
 CREATE TABLE IF NOT EXISTS usuarios (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(50) NOT NULL,
+    nome VARCHAR(60) NOT NULL,
     email VARCHAR(80) UNIQUE NOT NULL,
     senha VARCHAR(12) NOT NULL
 );

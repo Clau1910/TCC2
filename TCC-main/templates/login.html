@@ -3,26 +3,36 @@
 <head>
     <meta charset="UTF-8" />
     <title>Login</title>
+    <link rel="stylesheet" href=".\static\login.css">
 </head>
 <body>
-    <h2>Login</h2>
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li>{{ message }}</li>
-          {% endfor %}
-        </ul>
-      {% endif %}
-    {% endwith %}
-    <form method="post" action="{{ url_for('login') }}">
-        <label for="email">Email:</label>
-        <input type="email" name="email" id="email" required />
+  <div class="container">
+    <div class="parteprincipal">
+      <h1>GESTÃO DE TEMPO</h1>
+      <h2>Bem-vindo</h2>
+      <a href="criarlogin.html"><button>CRIAR</button></a>
+    </div>
+    <div class="partedelogin">
+      <h1>FAÇA LOGIN</h1>
+      <form method="post" action="{{ url_for('login') }}" class="">
+        <input type="email" name="email" id="email"placeholder="e-mail" required />
         <br />
-        <label for="senha">Senha:</label>
-        <input type="password" name="senha" id="senha" required autocomplete="current-password" />
+        <div class="esquecisenha"> 
+        <input type="password" name="senha" id="senha" placeholder="senha" required autocomplete="current-password" />
+        <a href="">esqueci senha</a>
         <br />
-        <button type="submit">Entrar</button>
-    </form>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                <p>{{ message }}</p>
+              {% endfor %}
+            
+          {% endif %}
+        {% endwith %}
+        <div>
+          <button type="submit">Entrar</button>
+      </form>
+    </div>
+  </div>
 </body>
 </html>

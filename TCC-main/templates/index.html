@@ -6,37 +6,17 @@
     <h2>Bem-vindo ao Sistema de Gestão de Tempo para Estudantes</h2>
 </div>
 
-<style>
+<div class="container">
+    <h2>GESTÃO DE TEMPO</h2>
 
-    body {
-        background-image: url("{{ url_for('static', filename='images/gestao_de_estudo.png') }}");
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-position: center;
-        height: 100vh;
-        margin: 0;
-    }
+    <div class="buttons">
+        <button><i class="bi bi-list-check"></i></button>
+        <button><i class="bi bi-journal-text"></i></button>
+        <button><i class="bi bi-clipboard-check"></i></button>
+        <button><i class="bi bi-calendar2-date"></i></button>
+    </div>
+</div>
 
-    .text-center {
-        position: relative;
-        z-index: 1;
-        color: white; 
-        padding-top: 5%;
-        font-weight: bold;
-        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-    }
-
-    body::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 0;
-    }
-
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
 
 {% endblock %}

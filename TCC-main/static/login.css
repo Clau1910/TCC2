@@ -37,7 +37,7 @@ body {
     border-radius: 10px 0 0 10px;
     height: 100%;
     width: 70%;
-    gap: 20px;
+    gap: 25px;
     display: flex;
     justify-content: center;
     flex-direction: column;
@@ -91,4 +91,8 @@ button {
 
  .esquecisenha a {
      color: #272727d5;
+}
+
+.spacer {
+    height: 15px;
 }

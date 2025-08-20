@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <title>Cadastro - Gestão de Tempo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+</head>
+<body>
+  <div class="container">
+    <div class="parteprincipal">
+      <h1>GESTÃO DE TEMPO</h1>
+      <h2>Cadastre-se</h2> 
+      <a href="{{ url_for('login') }}"><button>VOLTAR AO LOGIN</button></a>
+    </div>
+    <div class="partedelogin">
+      <h1>CRIAR CONTA</h1>
+      <form method="post" action="{{ url_for('cadastro') }}">
+        <input type="text" name="nome" id="nome" placeholder="Nome completo" required />
+        <div class="spacer"></div>
+        <input type="email" name="email" id="email" placeholder="E-mail" required />
+        <div class="spacer"></div>
+        <input type="password" name="senha" id="senha" placeholder="Senha" required />
+        <div class="spacer"></div>
+        <input type="password" name="confirmar_senha" id="confirmar_senha" placeholder="Confirmar senha" required />
+        <br />
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+              {% for message in messages %}
+                <p style="color: red;">{{ message }}</p>
+              {% endfor %}
+          {% endif %}
+        {% endwith %}
+        <div>
+          <button type="submit">Criar Conta</button>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

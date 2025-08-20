@@ -36,6 +36,8 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 @app.route('/')
 def index():
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
     return render_template('index.html')
 
 @app.route('/base')
@@ -94,6 +96,71 @@ def login():
             return redirect(url_for('login'))
 
     return render_template('login.html')
+
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    if request.method == 'POST':
+        nome = request.form.get('nome', '').strip()
+        email = request.form.get('email', '').strip()
+        senha = request.form.get('senha', '').strip()
+        confirmar_senha = request.form.get('confirmar_senha', '').strip()
+
+        # Validações
+        if not nome or not email or not senha:
+            flash('Todos os campos são obrigatórios.')
+            return redirect(url_for('cadastro'))
+
+        if senha != confirmar_senha:
+            flash('As senhas não coincidem.')
+            return redirect(url_for('cadastro'))
+
+        if len(senha) < 6:
+            flash('A senha deve ter pelo menos 6 caracteres.')
+            return redirect(url_for('cadastro'))
+
+        conn = get_db_connection()
+        if conn:
+            cursor = conn.cursor(dictionary=True)
+            
+            # Verificar se email já existe
+            cursor.execute("SELECT id FROM usuarios WHERE email = %s", (email,))
+            if cursor.fetchone():
+                cursor.close()
+                conn.close()
+                flash('Este e-mail já está cadastrado.')
+                return redirect(url_for('cadastro'))
+
+            try:
+                cursor.execute("INSERT INTO usuarios (nome, email, senha) VALUES (%s, %s, %s)",
+                               (nome, email, senha))
+                conn.commit()
+                
+                # Buscar o usuário recém-criado
+                cursor.execute("SELECT * FROM usuarios WHERE email = %s", (email,))
+                usuario = cursor.fetchone()
+                
+                cursor.close()
+                conn.close()
+                
+                if usuario:
+                    user = User(usuario['id'])
+                    login_user(user)
+                    session['usuario_id'] = usuario['id']
+                    session['usuario_nome'] = usuario['nome']
+                    flash('Conta criada com sucesso!')
+                    return redirect(url_for('index'))
+                    
+            except Exception as e:
+                conn.rollback()
+                cursor.close()
+                conn.close()
+                flash('Erro ao criar conta. Tente novamente.')
+                return redirect(url_for('cadastro'))
+        else:
+            flash('Erro ao conectar ao banco de dados.')
+            return redirect(url_for('cadastro'))
+
+    return render_template('cadastro.html')
 
 @app.route('/logout')
 def logout():

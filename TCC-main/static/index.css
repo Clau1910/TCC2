@@ -40,18 +40,92 @@ nav a {
 }
 
 .buttons {
-    margin-top: 20px;
+    margin-top: 40px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 25px;
 }
 
-.buttons button {
-    padding: 35px 35px;
-    margin: 20px;
+.btn-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px 20px;
+    width: 140px;
+    height: 140px;
     border: none;
-    border-radius: 5px;
-    background-color: #a2caf0;
-    color: rgb(255, 255, 255);
-    font-size: 16px;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #a2caf0, #8ab5e0);
+    color: white;
+    text-decoration: none;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-icon:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.2);
+    background: linear-gradient(145deg, #8ab5e0, #72a0d0);
+}
+
+.btn-icon:active {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-icon i {
+    font-size: 42px;
+    margin-bottom: 12px;
+    transition: transform 0.3s ease;
+}
+
+.btn-icon:hover i {
+    transform: scale(1.1);
+}
+
+.btn-icon span {
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+/* Efeito de brilho ao passar o mouse */
+.btn-icon::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+        45deg,
+        transparent,
+        rgba(255, 255, 255, 0.1),
+        transparent
+    );
+    transform: rotate(45deg);
+    transition: all 0.5s ease;
+    opacity: 0;
+}
+
+.btn-icon:hover::before {
+    opacity: 1;
+    animation: shine 1.5s infinite;
+}
+
+@keyframes shine {
+    0% {
+        transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    }
+    100% {
+        transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
 }
 
 i {

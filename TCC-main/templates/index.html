@@ -10,10 +10,22 @@
     <h2>GESTÃO DE TEMPO</h2>
 
     <div class="buttons">
-        <button><i class="bi bi-list-check"></i></button>
-        <button><i class="bi bi-journal-text"></i></button>
-        <button><i class="bi bi-clipboard-check"></i></button>
-        <button><i class="bi bi-calendar2-date"></i></button>
+        <a href="{{ url_for('list_tarefas') }}" class="btn-icon">
+            <i class="bi bi-list-check"></i>
+            <span>Listar Tarefas</span>
+        </a>
+        <a href="{{ url_for('list_materias') }}" class="btn-icon">
+            <i class="bi bi-journal-text"></i>
+            <span>Listar Matérias</span>
+        </a>
+        <a href="{{ url_for('add_tarefa') }}" class="btn-icon">
+            <i class="bi bi-clipboard-check"></i>
+            <span>Nova Tarefa</span>
+        </a>
+        <a href="{{ url_for('calendario') }}" class="btn-icon">
+            <i class="bi bi-calendar2-date"></i>
+            <span>Calendário</span>
+        </a>
     </div>
 </div>
 

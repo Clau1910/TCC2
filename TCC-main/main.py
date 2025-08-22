@@ -574,6 +574,12 @@ def materias_list():
     else:
         return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
 
+# Rota para o calendário
+@app.route('/calendario')
+@login_required
+def calendario():
+    return render_template('calendario.html')
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     app.logger.error(f"Unhandled exception: {e}")

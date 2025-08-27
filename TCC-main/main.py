@@ -548,15 +548,59 @@ def tarefas_events():
     if conn:
         cursor = conn.cursor(dictionary=True)
         if materia_id and materia_id != 'all':
-            cursor.execute("SELECT id, nome, descricao, prazo FROM tarefas WHERE usuario_id = %s AND materia_id = %s", (usuario_id, materia_id))
+            cursor.execute("SELECT id, nome, descricao, prazo, status FROM tarefas WHERE usuario_id = %s AND materia_id = %s", (usuario_id, materia_id))
         else:
-            cursor.execute("SELECT id, nome, descricao, prazo FROM tarefas WHERE usuario_id = %s", (usuario_id,))
+            cursor.execute("SELECT id, nome, descricao, prazo, status FROM tarefas WHERE usuario_id = %s", (usuario_id,))
         tarefas = cursor.fetchall()
         cursor.close()
         conn.close()
-        return jsonify(tarefas)
+        
+        # Processar tarefas para determinar cores baseadas no status e prazo
+        eventos = []
+        for tarefa in tarefas:
+            evento = {
+                'id': tarefa['id'],
+                'title': tarefa['nome'],
+                'start': tarefa['prazo'],
+                'description': tarefa['descricao'],
+                'className': determinar_cor_tarefa(tarefa)
+            }
+            eventos.append(evento)
+        
+        return jsonify(eventos)
     else:
         return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+def determinar_cor_tarefa(tarefa):
+    """Determina a classe CSS baseada no status e prazo da tarefa"""
+    from datetime import datetime
+    
+    status = tarefa.get('status', 'pendente')
+    prazo_str = tarefa.get('prazo')
+    
+    if not prazo_str:
+        return 'evento-pendente'  # Default para tarefas sem prazo
+    
+    try:
+        prazo = datetime.strptime(str(prazo_str), '%Y-%m-%d')
+        hoje = datetime.now()
+        
+        if status == 'concluída':
+            return 'evento-concluida'
+        elif status == 'em andamento':
+            return 'evento-andamento'
+        elif status == 'pendente':
+            if prazo < hoje:
+                return 'evento-atrasada'
+            else:
+                # Verificar se está próxima do prazo (3 dias)
+                dias_restantes = (prazo - hoje).days
+                if dias_restantes <= 3:
+                    return 'evento-proxima'
+                else:
+                    return 'evento-pendente'
+    except (ValueError, TypeError):
+        return 'evento-pendente'
 
 # Rota para listar matérias para o filtro
 @app.route('/materias_list', methods=['GET'])
@@ -578,7 +622,13 @@ def materias_list():
 @app.route('/calendario')
 @login_required
 def calendario():
-    return render_template('calendario.html')
+    return render_template('calendario_bootstrap.html')
+
+# Rota para o novo calendário
+@app.route('/calendario_novo')
+@login_required
+def calendario_novo():
+    return render_template('calendario_novo.html')
 
 @app.errorhandler(Exception)
 def handle_exception(e):

@@ -5,171 +5,255 @@
   <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.css' rel='stylesheet' />
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/main.min.js'></script>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='calendario.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block content %}
-  <h2>Calendário de Tarefas</h2>
+<div class="cabecalho-institucional">
+    Educação Profissional Paulista
+</div>
 
-  <div class="form-group">
-    <label for="materiaSelect">Filtrar por Matéria:</label>
-    <select id="materiaSelect" class="form-control">
-      <option value="all">Todas as Matérias</option>
-    </select>
-  </div>
+<div class="cabecalho-funcional">
+    <h2>Calendário</h2>
+</div>
 
-  <div id='calendar'></div>
-
-  <!-- Modal para detalhes da tarefa -->
-  <div class="modal fade" id="tarefaModal" tabindex="-1" role="dialog" aria-labelledby="tarefaModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="tarefaModalLabel">Detalhes da Tarefa</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <h4 id="modalTitulo"></h4>
-          <p id="modalDescricao"></p>
-          <p><strong>Data de Entrega:</strong> <span id="modalDataEntrega"></span></p>
-          <div id="modalFotos" class="d-flex flex-wrap"></div>
-          <hr>
-          <form id="uploadFotoForm" enctype="multipart/form-data">
-            <div class="form-group">
-              <label for="fotoInput">Adicionar Foto</label>
-              <input type="file" class="form-control-file" id="fotoInput" name="foto" accept="image/*" required>
+<div class="calendario-container">
+    <!-- Barra Lateral -->
+    <div class="barra-lateral">
+        <h4>Filtros</h4>
+        <div class="filtros-container">
+            <div class="filtro-grupo">
+                <h4>Status das Tarefas</h4>
+                <div class="filtro-item">
+                    <div class="filtro-marcador" style="background-color: #ffc107"></div>
+                    <span class="filtro-texto">Pendentes</span>
+                </div>
+                <div class="filtro-item">
+                    <div class="filtro-marcador" style="background-color: #dc3545"></div>
+                    <span class="filtro-texto">Atrasadas</span>
+                </div>
+                <div class="filtro-item">
+                    <div class="filtro-marcador" style="background-color: #28a745"></div>
+                    <span class="filtro-texto">Concluídas</span>
+                </div>
+                <div class="filtro-item">
+                    <div class="filtro-marcador" style="background-color: #17a2b8"></div>
+                    <span class="filtro-texto">Em Andamento</span>
+                </div>
+                <div class="filtro-item">
+                    <div class="filtro-marcador" style="background-color: #fd7e14"></div>
+                    <span class="filtro-texto">Próximas</span>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary">Enviar Foto</button>
-          </form>
-          <div id="uploadStatus" class="mt-2"></div>
         </div>
-      </div>
     </div>
-  </div>
 
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const calendarEl = document.getElementById('calendar');
-      const materiaSelect = document.getElementById('materiaSelect');
-      const tarefaModal = $('#tarefaModal');
-      const modalTitulo = document.getElementById('modalTitulo');
-      const modalDescricao = document.getElementById('modalDescricao');
-      const modalDataEntrega = document.getElementById('modalDataEntrega');
-      const modalFotos = document.getElementById('modalFotos');
-      const uploadFotoForm = document.getElementById('uploadFotoForm');
-      const uploadStatus = document.getElementById('uploadStatus');
+    <!-- Área Principal do Calendário -->
+    <div class="area-calendario">
+        <div id='calendar' style="min-height: 600px;"></div>
+    </div>
+</div>
 
-      let currentTarefaId = null;
+<!-- Modal para detalhes da tarefa -->
+<div class="modal fade" id="tarefaModal" tabindex="-1" role="dialog" aria-labelledby="tarefaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <!-- Conteúdo do modal -->
+    </div>
+</div>
 
-      // Carregar matérias para o filtro
-      function carregarMaterias() {
-        axios.get('/materias_list')
-          .then(response => {
-            const materias = response.data;
-            materias.forEach(materia => {
-              const option = document.createElement('option');
-              option.value = materia.id;
-              option.textContent = materia.nome;
-              materiaSelect.appendChild(option);
-            });
-          });
-      }
-
-      // Carregar eventos para o calendário
-      function carregarEventos(materiaId = 'all') {
-        let url = '/tarefas_events';
-        if (materiaId !== 'all') {
-          url += '?materia_id=' + materiaId;
-        }
-        axios.get(url)
-          .then(response => {
-            const events = response.data.map(tarefa => ({
-              id: tarefa.id,
-              title: tarefa.nome,
-              start: tarefa.prazo,
-              extendedProps: {
-                descricao: tarefa.descricao
-              }
-            }));
-            calendar.removeAllEvents();
-            calendar.addEventSource(events);
-          });
-      }
-
-      // Inicializar calendário
-      const calendar = new FullCalendar.Calendar(calendarEl, {
-        initialView: 'dayGridMonth',
-        locale: 'pt-br',
-        eventClick: function(info) {
-          const tarefaId = info.event.id;
-          currentTarefaId = tarefaId;
-          modalTitulo.textContent = info.event.title;
-          modalDescricao.textContent = info.event.extendedProps.descricao;
-          modalDataEntrega.textContent = info.event.start.toLocaleDateString('pt-BR');
-          modalFotos.innerHTML = '';
-          uploadStatus.textContent = '';
-
-          // Carregar fotos da tarefa
-          axios.get('/fotos_tarefa/' + tarefaId)
-            .then(response => {
-              const fotos = response.data;
-              fotos.forEach(foto => {
-                const img = document.createElement('img');
-                img.src = '/static/uploads/' + foto.foto;
-                img.style.width = '100px';
-                img.style.margin = '5px';
-                img.style.cursor = 'pointer';
-                img.addEventListener('click', () => {
-                  window.open(img.src, '_blank');
-                });
-                modalFotos.appendChild(img);
-              });
-            });
-
-          tarefaModal.modal('show');
-        }
-      });
-
-      calendar.render();
-      carregarMaterias();
-      carregarEventos();
-
-      materiaSelect.addEventListener('change', () => {
-        carregarEventos(materiaSelect.value);
-      });
-
-      uploadFotoForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        if (!currentTarefaId) return;
-        const formData = new FormData(uploadFotoForm);
-        axios.post('/upload_foto_tarefa/' + currentTarefaId, formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          }
-        }).then(response => {
-          uploadStatus.textContent = response.data.message;
-          // Atualizar fotos no modal
-          return axios.get('/fotos_tarefa/' + currentTarefaId);
-        }).then(response => {
-          modalFotos.innerHTML = '';
-          const fotos = response.data;
-          fotos.forEach(foto => {
-            const img = document.createElement('img');
-            img.src = '/static/uploads/' + foto.foto;
-            img.style.width = '100px';
-            img.style.margin = '5px';
-            img.style.cursor = 'pointer';
-            img.addEventListener('click', () => {
-              window.open(img.src, '_blank');
-            });
-            modalFotos.appendChild(img);
-          });
-          uploadFotoForm.reset();
-        }).catch(error => {
-          uploadStatus.textContent = 'Erro ao enviar foto.';
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    if (calendarEl) {
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridYear', // Visualização anual
+            locale: 'pt-br',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridYear,dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            views: {
+                dayGridYear: {
+                    type: 'dayGrid',
+                    duration: { years: 1 },
+                    buttonText: 'Ano'
+                }
+            },
+            events: function(fetchInfo, successCallback, failureCallback) {
+                // Carregar eventos dinamicamente do backend
+                axios.get('/tarefas_events')
+                    .then(function(response) {
+                        successCallback(response.data);
+                    })
+                    .catch(function(error) {
+                        console.error('Erro ao carregar eventos:', error);
+                        failureCallback(error);
+                    });
+            },
+            eventClick: function(info) {
+                // Abrir modal com detalhes da tarefa
+                abrirModalTarefa(info.event);
+            },
+            loading: function(isLoading) {
+                // Mostrar/ocultar indicador de carregamento
+                var loadingElement = document.getElementById('loading');
+                if (loadingElement) {
+                    loadingElement.style.display = isLoading ? 'block' : 'none';
+                }
+            }
         });
-      });
-    });
-  </script>
+        calendar.render();
+        
+        // Carregar eventos após a renderização
+        calendar.refetchEvents();
+    }
+});
+
+function abrirModalTarefa(evento) {
+    // Implementar modal de detalhes da tarefa
+    console.log('Tarefa clicada:', evento);
+    // Aqui você pode implementar um modal com os detalhes completos da tarefa
+    alert('Tarefa: ' + evento.title + '\nData: ' + evento.start.toLocaleDateString('pt-BR'));
+}
+
+// Sistema de notificações
+function verificarNotificacoes() {
+    axios.get('/tarefas_events')
+        .then(function(response) {
+            var tarefas = response.data;
+            var notificacoes = [];
+            
+            tarefas.forEach(function(tarefa) {
+                var hoje = new Date();
+                var prazo = new Date(tarefa.start);
+                var diasRestantes = Math.ceil((prazo - hoje) / (1000 * 60 * 60 * 24));
+                
+                if (diasRestantes <= 3 && diasRestantes >= 0) {
+                    notificacoes.push({
+                        titulo: tarefa.title,
+                        dias: diasRestantes,
+                        tipo: 'proxima'
+                    });
+                } else if (diasRestantes < 0) {
+                    notificacoes.push({
+                        titulo: tarefa.title,
+                        dias: Math.abs(diasRestantes),
+                        tipo: 'atrasada'
+                    });
+                }
+            });
+            
+            if (notificacoes.length > 0) {
+                mostrarNotificacoes(notificacoes);
+            }
+        })
+        .catch(function(error) {
+            console.error('Erro ao verificar notificações:', error);
+        });
+}
+
+function mostrarNotificacoes(notificacoes) {
+    // Criar elemento de notificação
+    var notificacaoElement = document.createElement('div');
+    notificacaoElement.className = 'notificacao-container';
+    notificacaoElement.innerHTML = `
+        <div class="notificacao-header">
+            <i class="bi bi-bell-fill"></i>
+            <span>Notificações</span>
+            <button onclick="fecharNotificacoes()">&times;</button>
+        </div>
+        <div class="notificacao-content">
+            ${notificacoes.map(not => `
+                <div class="notificacao-item notificacao-${not.tipo}">
+                    <strong>${not.titulo}</strong>
+                    <span>${not.tipo === 'proxima' ? `Entrega em ${not.dias} dias` : `Atrasada há ${not.dias} dias`}</span>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    document.body.appendChild(notificacaoElement);
+    
+    // Adicionar estilo para a notificação
+    var style = document.createElement('style');
+    style.textContent = `
+        .notificacao-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 10000;
+            max-width: 300px;
+        }
+        .notificacao-header {
+            background: #1a73e8;
+            color: white;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 8px 8px 0 0;
+        }
+        .notificacao-content {
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .notificacao-item {
+            padding: 8px;
+            margin: 4px 0;
+            border-radius: 4px;
+            border-left: 4px solid;
+        }
+        .notificacao-proxima {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+        .notificacao-atrasada {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+function fecharNotificacoes() {
+    var notificacao = document.querySelector('.notificacao-container');
+    if (notificacao) {
+        notificacao.remove();
+    }
+}
+
+// Verificar notificações ao carregar a página
+setTimeout(verificarNotificacoes, 2000);
+
+// Adicionar botão de notificação no cabeçalho
+function adicionarBotaoNotificacao() {
+    var cabecalho = document.querySelector('.cabecalho-funcional');
+    if (cabecalho) {
+        var botaoNotificacao = document.createElement('button');
+        botaoNotificacao.className = 'btn-notificacao';
+        botaoNotificacao.innerHTML = '<i class="bi bi-bell"></i>';
+        botaoNotificacao.onclick = verificarNotificacoes;
+        botaoNotificacao.style.marginLeft = 'auto';
+        botaoNotificacao.style.marginRight = '20px';
+        botaoNotificacao.style.background = '#1a73e8';
+        botaoNotificacao.style.color = 'white';
+        botaoNotificacao.style.border = 'none';
+        botaoNotificacao.style.borderRadius = '50%';
+        botaoNotificacao.style.width = '40px';
+        botaoNotificacao.style.height = '40px';
+        botaoNotificacao.style.cursor = 'pointer';
+        
+        cabecalho.appendChild(botaoNotificacao);
+    }
+}
+
+// Adicionar botão quando o DOM estiver carregado
+adicionarBotaoNotificacao();
+</script>
 {% endblock %}

@@ -1,32 +1,42 @@
-# TODO - Implementação de Ícones Funcionais
+# TODO - Melhorias Estéticas e Funcionais no Sistema
 
-## Plano de Implementação
+## 1. Tipografia
+- [x] Adicionar Google Fonts (ex: Roboto, Montserrat)
+- [x] Ajustar hierarquia visual com tamanhos e pesos variados
 
-### [ ] 1. Adicionar Rota para Calendário (main.py)
-- Criar rota `/calendario` que renderiza template `calendario.html`
+## 2. Modo Escuro/Claro
+- [x] Criar toggle no navbar para alternar temas
+- [x] Definir variáveis CSS para cores dos temas
+- [x] Aplicar tema escuro e claro em todos os componentes
 
-### [ ] 2. Tornar Botões da Página Inicial Funcionais (index.html)
-- Botão 1 (bi-list-check): Redirecionar para `/list_tarefas`
-- Botão 2 (bi-journal-text): Redirecionar para `/list_materias`
-- Botão 3 (bi-clipboard-check): Redirecionar para `/add_tarefa`
-- Botão 4 (bi-calendar2-date): Redirecionar para `/calendario`
+## 3. Animações de Entrada e Transições
+- [x] Adicionar animações CSS para fade-in, slide-in em elementos principais
+- [x] Usar biblioteca Animate.css ou CSS customizado
 
-### [ ] 3. Adicionar Link para Calendário na Navbar (base.html)
-- Incluir opção "Calendário" no menu de navegação
+## 4. Micro-interações
+- [x] Implementar efeito ripple nos botões
+- [x] Adicionar tooltips animados em botões e links
+- [x] Validar formulários com feedback visual (ícones, cores)
 
-### [ ] 4. Melhorar Estilo dos Botões (index.css)
-- Adicionar hover effects
-- Melhorar visual com sombras e transições
-- Adicionar labels descritivos
+## 5. Elementos Visuais Temáticos
+- [x] Incluir ícones temáticos (livros, relógios, gráficos)
+- [x] Usar SVGs animados ou ilustrações customizadas
 
-### [ ] 5. Testar Funcionalidade
-- Verificar se todas as rotas estão funcionando
-- Testar navegação pelos botões
-- Verificar calendário
+## 6. Layouts Responsivos e Criativos
+- [x] Usar CSS Grid para dashboards e listas
+- [x] Criar cards com sombras e bordas arredondadas
+- [x] Personalizar calendário com cores vibrantes por tipo de tarefa
 
-## Progresso
-- [ ] Etapa 1: Rota do Calendário
-- [ ] Etapa 2: Botões Funcionais
-- [ ] Etapa 3: Navbar Atualizada
-- [ ] Etapa 4: Estilos Melhorados
-- [ ] Etapa 5: Testes
+## 7. Efeitos Visuais Avançados
+- [x] Adicionar efeito parallax nos backgrounds
+- [x] Usar filtros CSS (blur, overlay)
+- [x] Criar loading spinner personalizado
+
+## 8. Gamificação Visual
+- [x] Adicionar barras de progresso animadas para tarefas
+- [x] Criar badges e contadores para conquistas e status
+
+## Passos Finais
+- [x] Testar responsividade e interações em todas as páginas
+- [x] Ajustar com base em feedback e bugs encontrados
+- [x] Documentar mudanças e instruções para uso do modo escuro/claro

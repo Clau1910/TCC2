@@ -1,35 +1,29 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Lista de Matérias</h2>
-<div class="text-center mb-4">
-    <a href="{{ url_for('add_materia') }}" class="btn btn-success">Adicionar Matéria</a>
-</div>
-<table class="table table-bordered text-center">
-    <thead class="thead-dark">
-        <tr>
-            <th>ID</th>
-            <th>Nome</th>
-            <th>Descrição</th>
-            <th>Horário</th>
-            <th>Professor</th>
-            <th>Ações</th>
-        </tr>
-    </thead>
-    <tbody>
+<div class="container">
+    <h2 class="text-center mb-4">Lista de Matérias</h2>
+    <div class="text-center mb-4">
+        <a href="{{ url_for('add_materia') }}" class="btn btn-success">Adicionar Matéria</a>
+    </div>
+    <div class="subject-grid">
         {% for materia in materias %}
-        <tr>
-            <td>{{ materia['id'] }}</td>
-            <td>{{ materia['nome'] }}</td>
-            <td>{{ materia.descricao if materia.descricao is defined else '' }}</td>
-            <td>{{ materia.horario }}</td>
-            <td>{{ materia['professor'] }}</td>
-            <td>
-                <a href="{{ url_for('edit_materia', id=materia['id']) }}" class="btn btn-primary">Editar</a>
-                <a href="{{ url_for('delete_materia', id=materia['id']) }}" class="btn btn-danger">Excluir</a>
-            </td>
-        </tr>
+            <div class="subject-card animate__animated animate__fadeInUp">
+                <div class="card-header">
+                    <h5 class="card-title">{{ materia['nome'] }}</h5>
+                    <small class="text-muted">ID: {{ materia['id'] }}</small>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ materia.descricao if materia.descricao is defined else 'Sem descrição' }}</p>
+                    <p class="card-text"><strong>Horário:</strong> {{ materia.horario }}</p>
+                    <p class="card-text"><strong>Professor:</strong> {{ materia['professor'] }}</p>
+                </div>
+                <div class="card-footer">
+                    <a href="{{ url_for('edit_materia', id=materia['id']) }}" class="btn btn-sm btn-primary">Editar</a>
+                    <a href="{{ url_for('delete_materia', id=materia['id']) }}" class="btn btn-sm btn-danger">Excluir</a>
+                </div>
+            </div>
         {% endfor %}
-    </tbody>
-</table>
+    </div>
+</div>
 {% endblock %}

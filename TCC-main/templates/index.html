@@ -2,27 +2,33 @@
 
 {% block content %}
 
-<div class="text-center">
+<div class="text-center animate__animated animate__fadeInDown">
+    <svg width="100" height="100" viewBox="0 0 100 100" class="welcome-icon">
+        <circle cx="50" cy="50" r="45" fill="#a2caf0" opacity="0.8"/>
+        <path d="M30 40 L50 30 L70 40 L70 70 L30 70 Z" fill="#fff"/>
+        <path d="M35 45 L35 65 L45 60 L45 40 Z" fill="#a2caf0"/>
+        <circle cx="60" cy="55" r="3" fill="#a2caf0"/>
+    </svg>
     <h2>Bem-vindo ao Sistema Web para Estudantes</h2>
 </div>
 
 <div class="container">
-    <h2>GESTÃO DE TEMPO</h2>
+    <h2 class="animate__animated animate__fadeInUp">GESTÃO DE TEMPO</h2>
 
-    <div class="buttons">
-        <a href="{{ url_for('list_tarefas') }}" class="btn-icon">
+    <div class="buttons animate__animated animate__fadeInUp animate__delay-1s">
+        <a href="{{ url_for('list_tarefas') }}" class="btn-icon" data-toggle="tooltip" data-placement="top" title="Ver todas as tarefas">
             <i class="bi bi-list-check"></i>
             <span>Listar Tarefas</span>
         </a>
-        <a href="{{ url_for('list_materias') }}" class="btn-icon">
+        <a href="{{ url_for('list_materias') }}" class="btn-icon" data-toggle="tooltip" data-placement="top" title="Ver todas as matérias">
             <i class="bi bi-journal-text"></i>
             <span>Listar Matérias</span>
         </a>
-        <a href="{{ url_for('add_tarefa') }}" class="btn-icon">
+        <a href="{{ url_for('add_tarefa') }}" class="btn-icon" data-toggle="tooltip" data-placement="top" title="Adicionar nova tarefa">
             <i class="bi bi-clipboard-check"></i>
             <span>Nova Tarefa</span>
         </a>
-        <a href="{{ url_for('calendario') }}" class="btn-icon">
+        <a href="{{ url_for('calendario') }}" class="btn-icon" data-toggle="tooltip" data-placement="top" title="Visualizar calendário">
             <i class="bi bi-calendar2-date"></i>
             <span>Calendário</span>
         </a>

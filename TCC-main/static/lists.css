@@ -1,0 +1,87 @@
+.task-grid, .subject-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.task-card, .subject-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+}
+
+.task-card:hover, .subject-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+.task-card .card-header, .subject-card .card-header {
+    background: linear-gradient(145deg, #a2caf0, #8ab5e0);
+    color: white;
+    padding: 15px;
+    border-bottom: none;
+}
+
+.task-card .card-body, .subject-card .card-body {
+    padding: 15px;
+}
+
+.task-card .card-footer, .subject-card .card-footer {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 10px 15px;
+    text-align: center;
+}
+
+.task-card .btn, .subject-card .btn {
+    margin: 0 5px;
+}
+
+/* Progress bar */
+.progress-container {
+    text-align: center;
+}
+
+.progress-bar-bg {
+    width: 100%;
+    height: 20px;
+    background-color: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745, #20c997);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+}
+
+/* Gamification badge */
+.badge-gamification {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(145deg, #ffd700, #ffed4e);
+    color: #333;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: bold;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    animation: bounce 2s infinite;
+}
+
+.badge-gamification i {
+    margin-right: 8px;
+    font-size: 20px;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}

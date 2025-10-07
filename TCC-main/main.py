@@ -214,7 +214,17 @@ class TarefaObj:
         # Map DB fields to template expected attributes
         self.titulo = d.get('nome')
         self.data_entrega = d.get('prazo')
+        if self.data_entrega:
+            if isinstance(self.data_entrega, str):
+                try:
+                    self.data_entrega = datetime.datetime.strptime(self.data_entrega, '%Y-%m-%d')
+                except ValueError:
+                    self.data_entrega = None
+            elif isinstance(self.data_entrega, datetime.date) and not isinstance(self.data_entrega, datetime.datetime):
+                self.data_entrega = datetime.datetime.combine(self.data_entrega, datetime.time.min)
         self.id_tarefa = d.get('id')
+        self.concluida = d.get('status') == 'concluída'
+        self.atrasada = self.data_entrega < datetime.datetime.now() and not self.concluida if self.data_entrega else False
 
 @app.route('/list_materias')
 @login_required
@@ -253,7 +263,6 @@ def test_db_connection():
 @app.route('/list_tarefas')
 @login_required
 def list_tarefas():
-    import datetime
     usuario_id = session.get('usuario_id')
     conn = get_db_connection()
     if conn:
@@ -265,12 +274,6 @@ def list_tarefas():
         tarefas = []
         for d in tarefas_dicts:
             tarefa = TarefaObj(d)
-            # Convert data_entrega to datetime object for template formatting
-            if tarefa.data_entrega and isinstance(tarefa.data_entrega, str):
-                try:
-                    tarefa.data_entrega = datetime.datetime.strptime(tarefa.data_entrega, '%Y-%m-%d')
-                except ValueError:
-                    tarefa.data_entrega = None
             if tarefa.id_tarefa is not None:
                 tarefas.append(tarefa)
         return render_template('list_tarefas.html', tarefas=tarefas)
@@ -298,11 +301,17 @@ def add_tarefa():
             return "Erro: Todos os campos são obrigatórios.", 400
 
         try:
-            prazo = datetime.datetime.strptime(prazo_str, '%d/%m/%Y').strftime('%Y-%m-%d')
+            prazo_obj = datetime.datetime.strptime(prazo_str, '%d/%m/%Y')
         except ValueError:
             flash("Erro: Formato de data inválido. Use o seletor de data para escolher a data corretamente.")
             print("DEBUG: Formato de data inválido")
             return redirect(url_for('add_tarefa'))
+
+        if prazo_obj.date() < datetime.date.today():
+            flash("Erro: Não é possível adicionar tarefas com data no passado.")
+            return redirect(url_for('add_tarefa'))
+
+        prazo = prazo_obj.strftime('%Y-%m-%d')
 
         if conn:
             cursor = conn.cursor()
@@ -329,7 +338,8 @@ def add_tarefa():
         materias = cursor.fetchall()
         cursor.close()
         conn.close()
-        return render_template('add_tarefa.html', materias=materias)
+        today = datetime.date.today().strftime('%Y-%m-%d')
+        return render_template('add_tarefa.html', materias=materias, today=today)
     else:
         print("DEBUG: Falha na conexão com o banco de dados para carregar matérias")
         return "Erro ao conectar ao banco de dados.", 500
@@ -365,6 +375,11 @@ def edit_tarefa(id_tarefa):
                     data_entrega_obj = datetime.datetime.strptime(data_entrega, '%d/%m/%Y')
                 except ValueError:
                     return "Erro: Formato de data inválido.", 400
+
+            if data_entrega_obj.date() < datetime.date.today():
+                flash("Erro: Não é possível definir data no passado.")
+                return redirect(url_for('edit_tarefa', id_tarefa=id_tarefa))
+
             data_entrega_formatada = data_entrega_obj.strftime('%Y-%m-%d')
 
             conn = get_db_connection()
@@ -390,7 +405,8 @@ def edit_tarefa(id_tarefa):
             else:
                 return "Erro ao conectar ao banco de dados.", 500
 
-        return render_template('edit_tarefa.html', tarefa=tarefa)
+        today = datetime.date.today().strftime('%Y-%m-%d')
+        return render_template('edit_tarefa.html', tarefa=tarefa, today=today)
     else:
         return "Erro ao conectar ao banco de dados.", 500
 
@@ -402,6 +418,24 @@ def delete_tarefa(id_tarefa):
         cursor = conn.cursor()
         cursor.execute("DELETE FROM tarefas WHERE id = %s", (id_tarefa,))
         conn.commit()
+        cursor.close()
+        conn.close()
+        return redirect(url_for('list_tarefas'))
+    else:
+        flash("Erro ao conectar ao banco de dados.")
+        return redirect(url_for('list_tarefas'))
+
+@app.route('/toggle_status/<int:id_tarefa>', methods=['POST'])
+@login_required
+def toggle_status(id_tarefa):
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT status FROM tarefas WHERE id = %s", (id_tarefa,))
+        tarefa = cursor.fetchone()
+        if tarefa and tarefa['status'] == 'pendente':
+            cursor.execute("UPDATE tarefas SET status = 'concluída' WHERE id = %s", (id_tarefa,))
+            conn.commit()
         cursor.close()
         conn.close()
         return redirect(url_for('list_tarefas'))
@@ -587,8 +621,6 @@ def determinar_cor_tarefa(tarefa):
         
         if status == 'concluída':
             return 'evento-concluida'
-        elif status == 'em andamento':
-            return 'evento-andamento'
         elif status == 'pendente':
             if prazo < hoje:
                 return 'evento-atrasada'

@@ -12,9 +12,14 @@
         <p class="card-text">
           <strong>Descrição:</strong> {{ tarefa.descricao }}<br>
           <strong>Data de Entrega:</strong> {{ tarefa.data_entrega.strftime('%d/%m/%Y') }}<br>
-          <strong>Status:</strong> {% if tarefa.concluida %} ✅ Concluída {% else %} ⏳ Pendente {% endif %}
+          <strong>Status:</strong> {% if tarefa.concluida %} ✅ Concluída {% elif tarefa.atrasada %} ❌ Atrasada {% else %} ⏳ Pendente {% endif %}
         </p>
         <a href="{{ url_for('edit_tarefa', id_tarefa=tarefa.id_tarefa) }}" class="btn btn-warning">Editar</a>
+        {% if not tarefa.concluida %}
+        <form action="{{ url_for('toggle_status', id_tarefa=tarefa.id_tarefa) }}" method="post" style="display:inline;">
+            <button type="submit" class="btn btn-success">Marcar como Concluída</button>
+        </form>
+        {% endif %}
         <a href="{{ url_for('delete_tarefa', id_tarefa=tarefa.id_tarefa) }}" class="btn btn-danger">Excluir</a>
       </div>
     </div>

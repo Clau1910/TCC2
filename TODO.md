@@ -1,42 +1,18 @@
-# TODO - Melhorias Estéticas e Funcionais no Sistema
+## TODO - Implementar Funcionalidade de Marcar Tarefas como Concluídas
 
-## 1. Tipografia
-- [x] Adicionar Google Fonts (ex: Roboto, Montserrat)
-- [x] Ajustar hierarquia visual com tamanhos e pesos variados
+### 1. Atualizar TarefaObj em main.py
+- [x] Definir self.concluida = (self.status == 'concluída') na classe TarefaObj
 
-## 2. Modo Escuro/Claro
-- [x] Criar toggle no navbar para alternar temas
-- [x] Definir variáveis CSS para cores dos temas
-- [x] Aplicar tema escuro e claro em todos os componentes
+### 2. Adicionar Rota de Toggle em main.py
+- [x] Criar rota /toggle_status/<int:id_tarefa> que alterna status entre 'pendente' e 'concluída'
 
-## 3. Animações de Entrada e Transições
-- [x] Adicionar animações CSS para fade-in, slide-in em elementos principais
-- [x] Usar biblioteca Animate.css ou CSS customizado
+### 3. Atualizar list_tarefas.html
+- [x] Adicionar botão "Marcar como Concluída" ou "Marcar como Pendente" no card-footer
 
-## 4. Micro-interações
-- [x] Implementar efeito ripple nos botões
-- [x] Adicionar tooltips animados em botões e links
-- [x] Validar formulários com feedback visual (ícones, cores)
+### 4. Atualizar list_tarefas_materia.html
+- [x] Adicionar botão similar para toggle de status
 
-## 5. Elementos Visuais Temáticos
-- [x] Incluir ícones temáticos (livros, relógios, gráficos)
-- [x] Usar SVGs animados ou ilustrações customizadas
-
-## 6. Layouts Responsivos e Criativos
-- [x] Usar CSS Grid para dashboards e listas
-- [x] Criar cards com sombras e bordas arredondadas
-- [x] Personalizar calendário com cores vibrantes por tipo de tarefa
-
-## 7. Efeitos Visuais Avançados
-- [x] Adicionar efeito parallax nos backgrounds
-- [x] Usar filtros CSS (blur, overlay)
-- [x] Criar loading spinner personalizado
-
-## 8. Gamificação Visual
-- [x] Adicionar barras de progresso animadas para tarefas
-- [x] Criar badges e contadores para conquistas e status
-
-## Passos Finais
-- [x] Testar responsividade e interações em todas as páginas
-- [x] Ajustar com base em feedback e bugs encontrados
-- [x] Documentar mudanças e instruções para uso do modo escuro/claro
+### 5. Testes
+- [x] Testar toggle de status via interface
+- [x] Verificar atualização da barra de progresso
+- [x] Verificar badges e status nos cards

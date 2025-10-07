@@ -22,6 +22,8 @@
                     <h5 class="card-title">{{ tarefa.titulo }}</h5>
                     {% if tarefa.concluida %}
                         <span class="badge badge-success">Concluída</span>
+                    {% elif tarefa.atrasada %}
+                        <span class="badge badge-danger">Atrasada</span>
                     {% else %}
                         <span class="badge badge-warning">Pendente</span>
                     {% endif %}
@@ -32,6 +34,11 @@
                 </div>
                 <div class="card-footer">
                     <a href="{{ url_for('edit_tarefa', id_tarefa=tarefa.id) }}" class="btn btn-sm btn-primary">Editar</a>
+                    {% if not tarefa.concluida %}
+                    <form action="{{ url_for('toggle_status', id_tarefa=tarefa.id) }}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-success">Marcar como Concluída</button>
+                    </form>
+                    {% endif %}
                     <form action="{{ url_for('delete_tarefa', id_tarefa=tarefa.id) }}" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta tarefa?');">Excluir</button>
                     </form>

@@ -1,23 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
+<style>
+.form-control {
+    border-radius: 15px;
+}
+</style>
 <div class="container mt-4">
   <h2 class="mb-4">Adicionar Matéria</h2>
   <form method="post" enctype="multipart/form-data" id="addMateriaForm">
     <div class="form-group">
-      <label for="nome_materia">Nome da Matéria</label>
-      <input type="text" class="form-control" id="nome_materia" name="nome_materia" required>
+      <input type="text" class="form-control" id="nome_materia" name="nome_materia" placeholder="Nome da Matéria" required>
     </div>
     <div class="form-group">
-      <label for="professor">Professor Responsável</label>
-      <input type="text" class="form-control" id="professor" name="professor" required>
+      <input type="text" class="form-control" id="professor" name="professor" placeholder="Professor Responsável" required>
     </div>
     <div class="form-group">
-      <label for="horario">Horário (Atualizado em tempo real)</label>
-      <input type="time" class="form-control" id="horario" name="horario" required step="1" readonly>
+      <input type="time" class="form-control" id="horario" name="horario" placeholder="Horário (Atualizado em tempo real)" required step="1" readonly>
     </div>
     <div class="form-group">
-      <label for="foto">Foto</label>
       <input type="file" class="form-control-file" id="foto" name="foto" accept="image/*">
     </div>
     <button type="submit" class="btn btn-success">Adicionar</button>

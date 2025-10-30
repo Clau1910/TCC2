@@ -158,6 +158,7 @@ i {
 }
 
 .welcome-icon {
+    margin-top: 20px;
     margin-bottom: 20px;
     animation: float 3s ease-in-out infinite;
 }

@@ -42,3 +42,12 @@ input:invalid {
     border-color: #dc3545;
 }
 
+/* Round borders for form elements to match task cards */
+.form-control {
+    border-radius: 15px;
+}
+
+.btn {
+    border-radius: 15px;
+}
+

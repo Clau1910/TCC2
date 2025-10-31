@@ -33,15 +33,13 @@
                     <p class="card-text"><small class="text-muted">Data de Entrega: {{ tarefa.data_entrega.strftime('%d/%m/%Y') }}</small></p>
                 </div>
                 <div class="card-footer">
-                    <a href="{{ url_for('edit_tarefa', id_tarefa=tarefa.id) }}" class="btn btn-sm btn-primary">Editar</a>
+                    <a href="{{ url_for('edit_tarefa', id_tarefa=tarefa.id_tarefa) }}" class="btn btn-sm btn-primary">Editar</a>
                     {% if not tarefa.concluida %}
-                    <form action="{{ url_for('toggle_status', id_tarefa=tarefa.id) }}" method="post" style="display:inline;">
+                    <form action="{{ url_for('toggle_status', id_tarefa=tarefa.id_tarefa) }}" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-sm btn-success">Marcar como Concluída</button>
                     </form>
                     {% endif %}
-                    <form action="{{ url_for('delete_tarefa', id_tarefa=tarefa.id) }}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza que deseja excluir esta tarefa?');">Excluir</button>
-                    </form>
+                    <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal{{ tarefa.id_tarefa }}">Excluir</button>
                 </div>
             </div>
         {% endfor %}
@@ -51,4 +49,29 @@
         <a href="{{ url_for('add_tarefa') }}" class="btn btn-success">Adicionar Nova Tarefa</a>
     </div>
 </div>
+
+<!-- Modais de Confirmação de Exclusão -->
+{% for tarefa in tarefas %}
+<div class="modal fade" id="deleteModal{{ tarefa.id_tarefa }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ tarefa.id_tarefa }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ tarefa.id_tarefa }}">Confirmar Exclusão</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Tem certeza que deseja excluir a tarefa "<strong>{{ tarefa.titulo }}</strong>"? Esta ação não pode ser desfeita.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form action="{{ url_for('delete_tarefa', id_tarefa=tarefa.id_tarefa) }}" method="post" style="display:inline;">
+                    <button type="submit" class="btn btn-danger">Excluir</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

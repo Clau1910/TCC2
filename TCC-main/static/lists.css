@@ -1,8 +1,22 @@
 .task-grid, .subject-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
     margin-bottom: 40px;
+}
+
+/* Responsividade: 2 colunas em tablets */
+@media (max-width: 768px) {
+    .task-grid, .subject-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Responsividade: 1 coluna em mobile */
+@media (max-width: 480px) {
+    .task-grid, .subject-grid {
+        grid-template-columns: 1fr;
+    }
 }
 
 .task-card, .subject-card {

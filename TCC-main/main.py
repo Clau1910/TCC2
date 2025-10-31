@@ -349,13 +349,21 @@ from flask_login import login_required
 @app.route('/edit_tarefa/<int:id_tarefa>', methods=['POST', 'GET'])
 @login_required
 def edit_tarefa(id_tarefa):
+    usuario_id = session.get('usuario_id')
+    if not usuario_id:
+        flash("Sessão expirada. Faça login novamente.")
+        return redirect(url_for('login'))
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM tarefas WHERE id = %s", (id_tarefa,))
+        cursor.execute("SELECT * FROM tarefas WHERE id = %s AND usuario_id = %s", (id_tarefa, usuario_id))
         tarefa = cursor.fetchone()
         cursor.close()
         conn.close()
+
+        if not tarefa:
+            flash("Tarefa não encontrada.")
+            return redirect(url_for('list_tarefas'))
 
         if request.method == 'POST':
             titulo = request.form.get('titulo', '').strip()
@@ -367,7 +375,6 @@ def edit_tarefa(id_tarefa):
                 return "Erro: Todos os campos são obrigatórios.", 400
 
             # Convertendo data_entrega para o formato YYYY-MM-DD
-            import datetime
             try:
                 data_entrega_obj = datetime.datetime.strptime(data_entrega, '%Y-%m-%d')
             except ValueError:
@@ -385,8 +392,8 @@ def edit_tarefa(id_tarefa):
             conn = get_db_connection()
             if conn:
                 cursor = conn.cursor()
-                cursor.execute("UPDATE tarefas SET nome = %s, descricao = %s, prazo = %s WHERE id = %s",
-                               (titulo, descricao, data_entrega_formatada, id_tarefa))
+                cursor.execute("UPDATE tarefas SET nome = %s, descricao = %s, prazo = %s WHERE id = %s AND usuario_id = %s",
+                               (titulo, descricao, data_entrega_formatada, id_tarefa, usuario_id))
                 conn.commit()
 
                 # Processar upload da foto se houver
@@ -396,7 +403,7 @@ def edit_tarefa(id_tarefa):
                     foto.save(foto_path)
                     # Inserir registro na tabela atividades_fotos
                     cursor.execute("INSERT INTO atividades_fotos (usuario_id, tarefa_id, foto) VALUES (%s, %s, %s)",
-                                   (session.get('usuario_id'), id_tarefa, filename))
+                                   (usuario_id, id_tarefa, filename))
                     conn.commit()
 
                 cursor.close()
@@ -413,10 +420,11 @@ def edit_tarefa(id_tarefa):
 @app.route('/delete_tarefa/<int:id_tarefa>', methods=['POST'])
 @login_required
 def delete_tarefa(id_tarefa):
+    usuario_id = session.get('usuario_id')
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor()
-        cursor.execute("DELETE FROM tarefas WHERE id = %s", (id_tarefa,))
+        cursor.execute("DELETE FROM tarefas WHERE id = %s AND usuario_id = %s", (id_tarefa, usuario_id))
         conn.commit()
         cursor.close()
         conn.close()
@@ -428,13 +436,14 @@ def delete_tarefa(id_tarefa):
 @app.route('/toggle_status/<int:id_tarefa>', methods=['POST'])
 @login_required
 def toggle_status(id_tarefa):
+    usuario_id = session.get('usuario_id')
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT status FROM tarefas WHERE id = %s", (id_tarefa,))
+        cursor.execute("SELECT status FROM tarefas WHERE id = %s AND usuario_id = %s", (id_tarefa, usuario_id))
         tarefa = cursor.fetchone()
         if tarefa and tarefa['status'] == 'pendente':
-            cursor.execute("UPDATE tarefas SET status = 'concluída' WHERE id = %s", (id_tarefa,))
+            cursor.execute("UPDATE tarefas SET status = 'concluída' WHERE id = %s AND usuario_id = %s", (id_tarefa, usuario_id))
             conn.commit()
         cursor.close()
         conn.close()
@@ -444,14 +453,20 @@ def toggle_status(id_tarefa):
         return redirect(url_for('list_tarefas'))
 
 @app.route('/edit_materia/<int:id>', methods=['POST', 'GET'])
+@login_required
 def edit_materia(id):
+    usuario_id = session.get('usuario_id')
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM materias WHERE id = %s", (id,))
+        cursor.execute("SELECT * FROM materias WHERE id = %s AND usuario_id = %s", (id, usuario_id))
         materia = cursor.fetchone()
         cursor.close()
         conn.close()
+
+        if not materia:
+            flash("Matéria não encontrada.")
+            return redirect(url_for('list_materias'))
 
         if request.method == 'POST':
             nome_materia = request.form.get('nome_materia', '').strip()
@@ -464,8 +479,8 @@ def edit_materia(id):
             conn = get_db_connection()
             if conn:
                 cursor = conn.cursor()
-                cursor.execute("UPDATE materias SET nome = %s, professor = %s, horario = %s WHERE id = %s",
-                               (nome_materia, professor, horario, id))
+                cursor.execute("UPDATE materias SET nome = %s, professor = %s, horario = %s WHERE id = %s AND usuario_id = %s",
+                               (nome_materia, professor, horario, id, usuario_id))
                 conn.commit()
                 cursor.close()
                 conn.close()
@@ -480,17 +495,23 @@ def edit_materia(id):
 import os
 
 @app.route('/delete_materia/<int:id>', methods=['POST', 'GET'])
+@login_required
 def delete_materia(id):
+    usuario_id = session.get('usuario_id')
     conn = get_db_connection()
     if conn:
         cursor = conn.cursor(dictionary=True)
         # Buscar o nome do arquivo da foto antes de deletar
-        cursor.execute("SELECT foto FROM materias WHERE id = %s", (id,))
+        cursor.execute("SELECT foto FROM materias WHERE id = %s AND usuario_id = %s", (id, usuario_id))
         materia = cursor.fetchone()
         foto_filename = materia['foto'] if materia else None
 
+        if not materia:
+            flash("Matéria não encontrada.")
+            return redirect(url_for('list_materias'))
+
         # Deletar a matéria do banco
-        cursor.execute("DELETE FROM materias WHERE id = %s", (id,))
+        cursor.execute("DELETE FROM materias WHERE id = %s AND usuario_id = %s", (id, usuario_id))
         conn.commit()
         cursor.close()
         conn.close()

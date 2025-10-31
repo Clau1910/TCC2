@@ -52,4 +52,52 @@ body.dark-theme #theme-toggle:hover {
     color: #fff !important;
 }
 
+/* Modais no modo escuro */
+body.dark-theme .modal-content {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+    border: 1px solid #333 !important;
+}
+
+body.dark-theme .modal-header {
+    background-color: #2a2a2a !important;
+    border-bottom: 1px solid #444 !important;
+}
+
+body.dark-theme .modal-header .close {
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .modal-body {
+    background-color: #1e1e1e !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .modal-footer {
+    background-color: #2a2a2a !important;
+    border-top: 1px solid #444 !important;
+}
+
+body.dark-theme .modal-footer .btn-secondary {
+    background-color: #555 !important;
+    border-color: #666 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-theme .modal-footer .btn-secondary:hover {
+    background-color: #666 !important;
+    color: #fff !important;
+}
+
+body.dark-theme .modal-footer .btn-danger {
+    background-color: #dc3545 !important;
+    border-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+body.dark-theme .modal-footer .btn-danger:hover {
+    background-color: #c82333 !important;
+    border-color: #bd2130 !important;
+}
+
 

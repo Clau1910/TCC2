@@ -17,8 +17,11 @@
       <form method="post" action="{{ url_for('login') }}" class="">
         <input type="email" name="email" id="email" placeholder="e-mail" required />
         <div class="spacer"></div>
-        <div class="esquecisenha"> 
-        <input type="password" name="senha" id="senha" placeholder="senha" required autocomplete="current-password" />
+        <div class="esquecisenha">
+        <div class="password-container">
+          <input type="password" name="senha" id="senha" placeholder="senha" required autocomplete="current-password" />
+          <button type="button" id="togglePassword" class="toggle-btn">👁</button>
+        </div>
         <a href="">esqueci senha</a>
         <br />
         {% with messages = get_flashed_messages() %}
@@ -34,5 +37,13 @@
       </form>
     </div>
   </div>
+  <script>
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const passwordInput = document.getElementById('senha');
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      this.textContent = type === 'password' ? '👁' : '🙈';
+    });
+  </script>
 </body>
 </html>

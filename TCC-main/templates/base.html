@@ -10,9 +10,9 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
-    <link rel="stylesheet" href=".\static\index.css">
-    <link rel="stylesheet" href=".\static\lists.css">
-    <link rel="stylesheet" href=".\static\dark-theme.css">
+    <link rel="stylesheet" href=".\static\index.css?v=1.1">
+    <link rel="stylesheet" href=".\static\lists.css?v=1.1">
+    <link rel="stylesheet" href=".\static\dark-theme.css?v=1.1">
     {% block head %}{% endblock %}
   </head>
   <body>
@@ -42,8 +42,52 @@
             </li>
           </ul>
           <ul class="navbar-nav">
-            <li class="nav-item">
-              <button id="theme-toggle" class="btn btn-outline-secondary">Modo Escuro</button>
+            <li class="nav-item dropdown">
+              <button class="btn btn-outline-secondary dropdown-toggle user-menu-btn" type="button" id="userMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="bi bi-person-circle"></i>
+                <span class="d-none d-lg-inline">{{ session.get('usuario_nome', 'Usuário') }}</span>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right user-menu" aria-labelledby="userMenuButton">
+                <div class="user-info">
+                  <div class="user-avatar">
+                    <i class="bi bi-person-circle-fill"></i>
+                  </div>
+                  <div class="user-details">
+                    <div class="user-name">{{ session.get('usuario_nome', 'Usuário') }}</div>
+                    <div class="user-email">{{ session.get('usuario_email', 'usuario@email.com') if session.get('usuario_email') else 'usuario@email.com' }}</div>
+                  </div>
+                </div>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="openFeedbackModal()">
+                  <i class="bi bi-chat-dots" style="font-size: 0.9rem;"></i>
+                  <span>Feedback</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button id="theme-toggle" class="dropdown-item theme-toggle-item" style="
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  padding: 8px 12px;
+                  border-radius: 20px;
+                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                  color: white;
+                  border: none;
+                  font-size: 0.8rem;
+                  font-weight: 500;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  margin: 4px 8px;
+                  width: calc(100% - 16px);
+                ">
+                  <i class="bi bi-moon-fill" style="font-size: 0.8rem; margin-right: 6px;"></i>
+                  <span id="theme-text">Modo Escuro</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item logout-item" href="{{ url_for('logout') }}">
+                  <i class="bi bi-box-arrow-right" style="font-size: 0.9rem;"></i>
+                  <span>Sair</span>
+                </a>
+              </div>
             </li>
           </ul>
         </div>
@@ -58,6 +102,9 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
     <script>
+      // Versão do script para forçar recarregamento
+      const scriptVersion = '1.1';
+
       document.addEventListener('DOMContentLoaded', function () {
         flatpickr("input[type=date]", {
           locale: "pt",
@@ -75,23 +122,239 @@
 
         // Theme toggle with persistence
         const themeToggle = document.getElementById('theme-toggle');
+        const themeText = document.getElementById('theme-text');
+        const themeIcon = themeToggle.querySelector('i');
         const currentTheme = localStorage.getItem('theme') || 'light';
-        if (currentTheme === 'dark') {
-          document.body.classList.add('dark-theme');
-          themeToggle.textContent = 'Modo Claro';
-        } else {
-          themeToggle.textContent = 'Modo Escuro';
+
+        function updateThemeUI(theme) {
+          if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            themeText.textContent = 'Modo Claro';
+            themeIcon.className = 'bi bi-sun-fill';
+          } else {
+            document.body.classList.remove('dark-theme');
+            themeText.textContent = 'Modo Escuro';
+            themeIcon.className = 'bi bi-moon-fill';
+          }
         }
+
+        updateThemeUI(currentTheme);
+
         themeToggle.addEventListener('click', () => {
-          document.body.classList.toggle('dark-theme');
-          const theme = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+          const theme = document.body.classList.contains('dark-theme') ? 'light' : 'dark';
           localStorage.setItem('theme', theme);
-          themeToggle.textContent = theme === 'dark' ? 'Modo Claro' : 'Modo Escuro';
+          updateThemeUI(theme);
         });
 
         // Initialize tooltips
         $('[data-toggle="tooltip"]').tooltip();
       });
+
+      // Função para abrir caixa de feedback flutuante
+      function openFeedbackModal() {
+        console.log('Abrindo caixa de feedback flutuante...');
+
+        // Verificar se já existe uma caixa de feedback
+        const existingBox = document.querySelector('.feedback-box');
+        if (existingBox) {
+          console.log('Removendo caixa existente...');
+          existingBox.remove();
+          return;
+        }
+
+        console.log('Criando nova caixa de feedback...');
+
+        const feedbackBox = document.createElement('div');
+        feedbackBox.className = 'feedback-box';
+        feedbackBox.style.cssText = `
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          width: 380px;
+          min-height: 450px;
+          max-width: calc(100vw - 40px);
+          background: white;
+          border-radius: 12px;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+          z-index: 1000;
+          transform: translateY(100px);
+          opacity: 0;
+          transition: all 0.3s ease-out;
+          border: 1px solid #e1e5e9;
+        `;
+
+        feedbackBox.innerHTML = `
+          <div style="
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+          ">
+            <div style="
+              display: flex;
+              align-items: center;
+            ">
+              <div style="
+                width: 20px;
+                height: 20px;
+                border-radius: 50%;
+                background: rgba(255, 255, 255, 0.2);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 6px;
+              ">
+                <i class="bi bi-chat-dots-fill" style="font-size: 0.7rem; color: white;"></i>
+              </div>
+              <div>
+                <span style="font-size: 1.1rem; font-weight: 600;">Feedback</span>
+              </div>
+            </div>
+            <button style="
+              background: none;
+              border: none;
+              color: white;
+              font-size: 1.2rem;
+              cursor: pointer;
+              padding: 5px;
+              border-radius: 50%;
+              width: 25px;
+              height: 25px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: all 0.3s ease;
+            " onclick="this.closest('.feedback-box').remove()">&times;</button>
+          </div>
+          <div style="padding: 20px;">
+            <form class="feedback-form">
+              <div style="margin-bottom: 20px;">
+                <label style="
+                  display: block;
+                  margin-bottom: 5px;
+                  font-weight: 600;
+                  color: #333;
+                  font-size: 0.8rem;
+                ">
+                  <i class="bi bi-tag-fill" style="font-size: 0.8rem;"></i>
+                  Tipo
+                </label>
+                <select id="feedback-type" class="form-control" style="
+                  width: 100%;
+                  padding: 15px;
+                  border: 2px solid #e1e5e9;
+                  border-radius: 8px;
+                  font-size: 1rem;
+                  min-height: 50px;
+                  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+                ">
+                  <option value="sugestao">💡 Sugestão</option>
+                  <option value="bug">🐛 Bug</option>
+                  <option value="melhoria">✨ Melhoria</option>
+                  <option value="outro">❓ Outro</option>
+                </select>
+              </div>
+              <div style="margin-bottom: 20px;">
+                <label style="
+                  display: block;
+                  margin-bottom: 5px;
+                  font-weight: 600;
+                  color: #333;
+                  font-size: 0.8rem;
+                ">
+                  <i class="bi bi-pencil-fill" style="font-size: 0.8rem;"></i>
+                  Mensagem
+                </label>
+                <textarea id="feedback-message" class="form-control" placeholder="Sua opinião é importante..." required rows="3" style="
+                  width: 100%;
+                  padding: 12px;
+                  border: 2px solid #e1e5e9;
+                  border-radius: 8px;
+                  font-size: 1rem;
+                  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+                "></textarea>
+              </div>
+              <div style="margin-bottom: 20px;">
+                <label style="
+                  display: block;
+                  margin-bottom: 5px;
+                  font-weight: 600;
+                  color: #333;
+                  font-size: 0.8rem;
+                ">
+                  <i class="bi bi-envelope-fill" style="font-size: 0.8rem;"></i>
+                  Email (opcional)
+                </label>
+                <input type="email" id="feedback-email" class="form-control" placeholder="seu@email.com" style="
+                  width: 100%;
+                  padding: 12px;
+                  border: 2px solid #e1e5e9;
+                  border-radius: 8px;
+                  font-size: 1rem;
+                  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+                ">
+              </div>
+              <div style="
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+                margin-top: 30px;
+              ">
+                <button type="submit" class="btn-feedback btn-submit" style="
+                  padding: 8px 16px;
+                  border: none;
+                  border-radius: 6px;
+                  font-size: 0.9rem;
+                  font-weight: 600;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  text-transform: uppercase;
+                  letter-spacing: 0.5px;
+                  display: flex;
+                  align-items: center;
+                  gap: 6px;
+                  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                  color: white;
+                ">
+                  <i class="bi bi-send-fill" style="font-size: 0.9rem;"></i>
+                  Enviar
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+
+        // Adicionar evento de submit ao formulário
+        feedbackBox.querySelector('.feedback-form').addEventListener('submit', function(e) {
+          e.preventDefault();
+          const tipo = document.getElementById('feedback-type').value;
+          const mensagem = document.getElementById('feedback-message').value;
+          const email = document.getElementById('feedback-email').value;
+
+          if (!mensagem.trim()) {
+            alert('Por favor, digite uma mensagem.');
+            return;
+          }
+
+          // Aqui você pode implementar o envio do feedback
+          // Por enquanto, apenas mostra uma mensagem de sucesso
+          alert('Feedback enviado com sucesso! Obrigado pela sua contribuição.');
+          feedbackBox.remove();
+        });
+
+        document.body.appendChild(feedbackBox);
+        console.log('Caixa de feedback adicionada ao DOM');
+
+        // Animação de entrada
+        setTimeout(() => {
+          feedbackBox.style.transform = 'translateY(0)';
+          feedbackBox.style.opacity = '1';
+          console.log('Animação de entrada aplicada');
+        }, 10);
+      }
     </script>
   </body>
 </html>

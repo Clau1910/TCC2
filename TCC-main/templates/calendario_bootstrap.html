@@ -9,15 +9,17 @@
 {% endblock %}
 
 {% block content %}
-<div class="cabecalho-institucional">
-    Educação Profissional Paulista
-</div>
+<div class="cabecalho-principal">
+    <div class="cabecalho-institucional">
+        Educação Profissional Paulista
+    </div>
 
-<div class="cabecalho-funcional">
-    <h2>Minhas Disciplinas / Calendário</h2>
-    <button class="btn btn-primary btn-notificacao" onclick="verificarNotificacoes()">
-        <i class="bi bi-bell"></i>
-    </button>
+    <div class="cabecalho-funcional">
+        <h2>Minhas Disciplinas / Calendário</h2>
+        <button class="btn btn-primary btn-notificacao" onclick="verificarNotificacoes()">
+            <i class="bi bi-bell"></i>
+        </button>
+    </div>
 </div>
 
 <div class="calendario-container">
@@ -132,11 +134,12 @@ function renderizarCalendario() {
         const data = new Date(ano, mes, dia);
         const tarefasDia = tarefas.filter(t => {
             const dataTarefa = new Date(t.start);
-            return dataTarefa.getDate() === dia && 
-                   dataTarefa.getMonth() === mes && 
-                   dataTarefa.getFullYear() === ano;
+            // Usar UTC para evitar problemas de timezone
+            return dataTarefa.getUTCDate() === dia &&
+                   dataTarefa.getUTCMonth() === mes &&
+                   dataTarefa.getUTCFullYear() === ano;
         });
-        
+
         const dayElement = criarDiaElemento(dia, '', tarefasDia, data);
         calendarDays.appendChild(dayElement);
     }
@@ -187,7 +190,49 @@ function mudarMes(delta) {
 }
 
 function abrirModalTarefa(tarefa) {
-    alert(`Tarefa: ${tarefa.title}\nData: ${new Date(tarefa.start).toLocaleDateString('pt-BR')}\nDescrição: ${tarefa.description}`);
+    const modalElement = document.createElement('div');
+    modalElement.className = 'tarefa-modal-overlay';
+    modalElement.innerHTML = `
+        <div class="tarefa-modal">
+            <div class="tarefa-header">
+                <i class="bi bi-calendar-event"></i>
+                <span>Detalhes da Tarefa</span>
+                <button class="tarefa-close" onclick="this.closest('.tarefa-modal-overlay').remove()">&times;</button>
+            </div>
+            <div class="tarefa-content">
+                <div class="tarefa-info">
+                    <h3 class="tarefa-titulo">${tarefa.title}</h3>
+                    <div class="tarefa-meta">
+                        <div class="tarefa-data">
+                            <i class="bi bi-calendar"></i>
+                            <span>${new Date(tarefa.start).toLocaleDateString('pt-BR')}</span>
+                        </div>
+                        <div class="tarefa-status ${tarefa.className}">
+                            <i class="bi bi-circle-fill"></i>
+                            <span>${getStatusText(tarefa.className)}</span>
+                        </div>
+                    </div>
+                    <div class="tarefa-descricao">
+                        <h4>Descrição</h4>
+                        <p>${tarefa.description || 'Sem descrição disponível.'}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modalElement);
+}
+
+function getStatusText(className) {
+    const statusMap = {
+        'evento-pendente': 'Pendente',
+        'evento-atrasada': 'Atrasada',
+        'evento-concluida': 'Concluída',
+        'evento-andamento': 'Em Andamento',
+        'evento-proxima': 'Próxima'
+    };
+    return statusMap[className] || 'Desconhecido';
 }
 
 // Sistema de notificações
@@ -221,23 +266,30 @@ function verificarNotificacoes() {
 
 function mostrarNotificacoes(notificacoes) {
     const notificacaoElement = document.createElement('div');
-    notificacaoElement.className = 'notificacao-container';
+    notificacaoElement.className = 'notificacao-modal-overlay';
     notificacaoElement.innerHTML = `
-        <div class="notificacao-header">
-            <i class="bi bi-bell-fill"></i>
-            <span>Notificações</span>
-            <button onclick="this.parentElement.parentElement.remove()">&times;</button>
-        </div>
-        <div class="notificacao-content">
-            ${notificacoes.map(not => `
-                <div class="notificacao-item notificacao-${not.tipo}">
-                    <strong>${not.titulo}</strong>
-                    <span>${not.tipo === 'proxima' ? `Entrega em ${not.dias} dias` : `Atrasada há ${not.dias} dias`}</span>
-                </div>
-            `).join('')}
+        <div class="notificacao-modal">
+            <div class="notificacao-header">
+                <i class="bi bi-bell-fill"></i>
+                <span>Notificações</span>
+                <button class="notificacao-close" onclick="this.closest('.notificacao-modal-overlay').remove()">&times;</button>
+            </div>
+            <div class="notificacao-content">
+                ${notificacoes.length > 0 ? notificacoes.map(not => `
+                    <div class="notificacao-item notificacao-${not.tipo}">
+                        <div class="notificacao-icon">
+                            <i class="bi ${not.tipo === 'proxima' ? 'bi-clock' : 'bi-exclamation-triangle'}"></i>
+                        </div>
+                        <div class="notificacao-text">
+                            <strong>${not.titulo}</strong>
+                            <span>${not.tipo === 'proxima' ? `Entrega em ${not.dias} dias` : `Atrasada há ${not.dias} dias`}</span>
+                        </div>
+                    </div>
+                `).join('') : '<div class="notificacao-empty">Nenhuma notificação pendente</div>'}
+            </div>
         </div>
     `;
-    
+
     document.body.appendChild(notificacaoElement);
 }
 

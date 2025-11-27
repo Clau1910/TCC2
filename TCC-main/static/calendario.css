@@ -24,20 +24,22 @@
 
 /* Cabeçalho Funcional */
 .cabecalho-funcional {
-    background: #f5f7fa;
-    padding: 18px 32px;
-    border-bottom: 1px solid #e0e0e0;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    padding: 20px 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    border-bottom: 2px solid #dee2e6;
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .cabecalho-funcional h2 {
     font-family: 'Roboto', Arial, sans-serif;
-    font-weight: 500;
+    font-weight: 600;
     color: #1a73e8;
     margin: 0;
-    font-size: 1.3rem;
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
 
 /* Barra Lateral */
@@ -637,4 +639,351 @@
 
 .barra-lateral::-webkit-scrollbar-thumb:hover {
     background: #bdc1c6;
+}
+
+/* Modal de Notificações */
+.notificacao-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeInModal 0.3s ease-out;
+}
+
+.notificacao-modal {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 450px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: slideInModal 0.3s ease-out;
+}
+
+.notificacao-header {
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.notificacao-header i {
+    margin-right: 12px;
+    font-size: 1.4rem;
+}
+
+.notificacao-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.notificacao-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.notificacao-content {
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.notificacao-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+}
+
+.notificacao-item:hover {
+    background: #f8f9fa;
+}
+
+.notificacao-item:last-child {
+    border-bottom: none;
+}
+
+.notificacao-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.notificacao-proxima .notificacao-icon {
+    background: linear-gradient(135deg, #fd7e14, #e66a00);
+    color: white;
+}
+
+.notificacao-atrasada .notificacao-icon {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    color: white;
+}
+
+.notificacao-text strong {
+    display: block;
+    color: #1a73e8;
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 1rem;
+}
+
+.notificacao-text span {
+    color: #5f6368;
+    font-size: 0.9rem;
+}
+
+.notificacao-empty {
+    text-align: center;
+    padding: 40px 24px;
+    color: #9aa0a6;
+    font-style: italic;
+}
+
+/* Animações do Modal */
+@keyframes fadeInModal {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideInModal {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Scroll personalizado para notificações */
+.notificacao-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.notificacao-content::-webkit-scrollbar-track {
+    background: #f1f3f4;
+}
+
+.notificacao-content::-webkit-scrollbar-thumb {
+    background: #dadce0;
+    border-radius: 3px;
+}
+
+.notificacao-content::-webkit-scrollbar-thumb:hover {
+    background: #bdc1c6;
+}
+
+/* Modal de Detalhes da Tarefa */
+.tarefa-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    animation: fadeInModal 0.3s ease-out;
+}
+
+.tarefa-modal {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    animation: slideInModal 0.3s ease-out;
+}
+
+.tarefa-header {
+    background: linear-gradient(135deg, #1a73e8, #4285f4);
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.tarefa-header i {
+    margin-right: 12px;
+    font-size: 1.4rem;
+}
+
+.tarefa-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.8rem;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.2s;
+}
+
+.tarefa-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.tarefa-content {
+    padding: 24px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.tarefa-info h3.tarefa-titulo {
+    margin: 0 0 16px 0;
+    color: #1a73e8;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.tarefa-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.tarefa-data,
+.tarefa-status {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #f8f9fa;
+}
+
+.tarefa-data i,
+.tarefa-status i {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+.tarefa-data {
+    color: #5f6368;
+}
+
+.tarefa-status {
+    font-weight: 600;
+}
+
+.tarefa-status.evento-pendente {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+}
+
+.tarefa-status.evento-atrasada {
+    background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+    color: #721c24;
+}
+
+.tarefa-status.evento-concluida {
+    background: linear-gradient(135deg, #d4edda, #c3e6cb);
+    color: #155724;
+}
+
+.tarefa-status.evento-andamento {
+    background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+    color: #0c5460;
+}
+
+.tarefa-status.evento-proxima {
+    background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+    color: #856404;
+}
+
+.tarefa-descricao h4 {
+    margin: 0 0 8px 0;
+    color: #3c4043;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.tarefa-descricao p {
+    margin: 0;
+    color: #5f6368;
+    line-height: 1.6;
+}
+
+/* Scroll personalizado para modal de tarefa */
+.tarefa-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tarefa-content::-webkit-scrollbar-track {
+    background: #f1f3f4;
+}
+
+.tarefa-content::-webkit-scrollbar-thumb {
+    background: #dadce0;
+    border-radius: 3px;
+}
+
+.tarefa-content::-webkit-scrollbar-thumb:hover {
+    background: #bdc1c6;
+}
+
+/* Responsividade para modal de tarefa */
+@media (max-width: 600px) {
+    .tarefa-modal {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .tarefa-header {
+        padding: 16px 20px;
+        font-size: 1.1rem;
+    }
+
+    .tarefa-content {
+        padding: 20px;
+    }
+
+    .tarefa-titulo {
+        font-size: 1.3rem;
+    }
 }

@@ -87,6 +87,7 @@ def login():
                 login_user(user)
                 session['usuario_id'] = usuario['id']
                 session['usuario_nome'] = usuario['nome']
+                session['usuario_email'] = usuario['email']
                 return redirect(url_for('index'))
             else:
                 flash('Email ou senha inválidos.')

@@ -148,6 +148,7 @@ def cadastro():
                     login_user(user)
                     session['usuario_id'] = usuario['id']
                     session['usuario_nome'] = usuario['nome']
+                    session['usuario_email'] = usuario['email']
                     flash('Conta criada com sucesso!')
                     return redirect(url_for('index'))
                     
@@ -294,6 +295,7 @@ def add_tarefa():
         descricao = request.form.get('descricao', '').strip()
         prazo_str = request.form.get('data_entrega', '').strip()
         materia_id = request.form.get('materia_id', '').strip()
+        foto = request.files.get('foto')
 
         print(f"DEBUG: Dados recebidos - titulo: {nome}, descricao: {descricao}, data_entrega: {prazo_str}, materia_id: {materia_id}, usuario_id: {usuario_id}")
 
@@ -319,8 +321,20 @@ def add_tarefa():
             try:
                 cursor.execute("INSERT INTO tarefas (nome, descricao, prazo, materia_id, usuario_id) VALUES (%s, %s, %s, %s, %s)",
                                (nome, descricao, prazo, materia_id, usuario_id))
+                tarefa_id = cursor.lastrowid
                 conn.commit()
                 print("DEBUG: Inserção realizada com sucesso")
+
+                # Processar upload da foto se houver
+                if foto and foto.filename != '' and allowed_file(foto.filename):
+                    filename = secure_filename(f"tarefa_{tarefa_id}_{foto.filename}")
+                    foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    foto.save(foto_path)
+                    # Inserir registro na tabela atividades_fotos
+                    cursor.execute("INSERT INTO atividades_fotos (usuario_id, tarefa_id, foto) VALUES (%s, %s, %s)",
+                                   (usuario_id, tarefa_id, filename))
+                    conn.commit()
+
             except Exception as e:
                 print(f"DEBUG: Erro na inserção: {e}")
                 conn.rollback()
@@ -610,7 +624,7 @@ def tarefas_events():
         tarefas = cursor.fetchall()
         cursor.close()
         conn.close()
-        
+
         # Processar tarefas para determinar cores baseadas no status e prazo
         eventos = []
         for tarefa in tarefas:
@@ -622,7 +636,7 @@ def tarefas_events():
                 'className': determinar_cor_tarefa(tarefa)
             }
             eventos.append(evento)
-        
+
         return jsonify(eventos)
     else:
         return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
@@ -669,6 +683,41 @@ def materias_list():
         cursor.close()
         conn.close()
         return jsonify(materias)
+    else:
+        return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
+
+# Rota para obter estatísticas das tarefas (excluindo concluídas)
+@app.route('/tarefas_stats', methods=['GET'])
+@login_required
+def tarefas_stats():
+    usuario_id = session.get('usuario_id')
+    conn = get_db_connection()
+    if conn:
+        cursor = conn.cursor(dictionary=True)
+        # Contar tarefas pendentes (não concluídas)
+        cursor.execute("SELECT COUNT(*) as pendentes FROM tarefas WHERE usuario_id = %s AND status != 'concluída'", (usuario_id,))
+        pendentes = cursor.fetchone()['pendentes']
+
+        # Contar tarefas atrasadas (não concluídas e prazo passado)
+        cursor.execute("SELECT COUNT(*) as atrasadas FROM tarefas WHERE usuario_id = %s AND status != 'concluída' AND prazo < CURDATE()", (usuario_id,))
+        atrasadas = cursor.fetchone()['atrasadas']
+
+        # Contar tarefas concluídas
+        cursor.execute("SELECT COUNT(*) as concluidas FROM tarefas WHERE usuario_id = %s AND status = 'concluída'", (usuario_id,))
+        concluidas = cursor.fetchone()['concluidas']
+
+        # Total de tarefas
+        total = pendentes + concluidas
+
+        cursor.close()
+        conn.close()
+
+        return jsonify({
+            'total': total,
+            'pendentes': pendentes,
+            'atrasadas': atrasadas,
+            'concluidas': concluidas
+        })
     else:
         return jsonify({'error': 'Erro ao conectar ao banco de dados'}), 500
 
